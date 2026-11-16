@@ -1,0 +1,106 @@
+{
+  "recipes": [
+    {
+      "year": 2027,
+      "emissions_source_id": "SYNTHETIC_DYNAMIC_STRUCTURE",
+      "pellet_resource_id": "pellets_dr_67",
+      "minimum_pellet_fe_fraction": 0.66,
+      "maximum_pellet_gangue_fraction": 0.03,
+      "dri_fe_fraction": 0.92,
+      "iron_recovery": 0.97,
+      "hydrogen_resource_id": "h2",
+      "preheat_electric_efficiency": 0.9,
+      "dri_pool_id": "X_DRI",
+      "electricity_resource_id": "power_x",
+      "steel_fe_fraction": 0.99,
+      "eaf_dri_iron_recovery": 0.98,
+      "scrap_charge_share": 0.25,
+      "route": "hot_dri",
+      "recipe_id": "R_X_H2DRI",
+      "nonresource_opex_EUR_per_t": 45.0,
+      "scrap_fe_fraction": 0.99,
+      "eaf_scrap_iron_recovery": 0.98,
+      "scrap_resource_id": "scrap"
+    },
+    {
+      "year": 2027,
+      "emissions_source_id": "SYNTHETIC_DYNAMIC_STRUCTURE",
+      "pellet_resource_id": "pellets_dr_67",
+      "minimum_pellet_fe_fraction": 0.66,
+      "maximum_pellet_gangue_fraction": 0.03,
+      "dri_fe_fraction": 0.92,
+      "iron_recovery": 0.97,
+      "hydrogen_resource_id": "h2",
+      "preheat_electric_efficiency": 0.9,
+      "dri_pool_id": "X_DRI",
+      "electricity_resource_id": "power_x",
+      "route": "hbi_production",
+      "recipe_id": "R_X_HBIPROD",
+      "nonresource_opex_EUR_per_t": 38.0,
+      "hbi_resource_id": "hbi",
+      "briquette_yield": 0.99
+    },
+    {
+      "year": 2027,
+      "emissions_source_id": "SYNTHETIC_DYNAMIC_STRUCTURE",
+      "steel_fe_fraction": 0.99,
+      "eaf_dri_iron_recovery": 0.98,
+      "scrap_charge_share": 0.0,
+      "route": "hbi_eaf",
+      "recipe_id": "R_EU_HBIEAF",
+      "nonresource_opex_EUR_per_t": 65.0,
+      "hbi_resource_id": "hbi",
+      "reheat_MWh_per_t": 0.15,
+      "electricity_resource_id": "power_eu",
+      "logistics": {
+        "delivered_fraction": 0.95,
+        "border_fraction": 0.98,
+        "freight_EUR_per_t_shipped": 25.0,
+        "handling_EUR_per_t_shipped": 5.0,
+        "capacity_t_shipped": 800000,
+        "emissions_tco2e_per_t_shipped": 0.03
+      }
+    }
+  ],
+  "pellet_blocks": [
+    {
+      "node_id": "X",
+      "resource_id": "pellets_dr_67",
+      "block_id": "P1",
+      "year": 2027,
+      "pellet_fe_fraction": 0.67,
+      "pellet_gangue_fraction": 0.025,
+      "ore_limited_t_pellets": 900000,
+      "pellet_capacity_t": 750000,
+      "delivery_capacity_t": 850000,
+      "other_use_t": 50000,
+      "mined_ore_fe_fraction": 0.62,
+      "source_usd_to_model_eur": 0.9,
+      "freight_EUR_per_t": 10.0,
+      "emission_factor": 0.15,
+      "source_id": "SYNTHETIC_DYNAMIC_STRUCTURE"
+    }
+  ],
+  "electricity_blocks": [
+    {
+      "node_id": "X",
+      "resource_id": "power_x",
+      "block_id": "PWR1",
+      "year": 2027,
+      "price_EUR_per_MWh": 50,
+      "emissions_tco2e_per_MWh": 0.2,
+      "annual_MWh": 10000000,
+      "source_id": "SYNTHETIC_DYNAMIC_STRUCTURE"
+    },
+    {
+      "node_id": "EU",
+      "resource_id": "power_eu",
+      "block_id": "PWR1",
+      "year": 2027,
+      "price_EUR_per_MWh": 50,
+      "emissions_tco2e_per_MWh": 0.2,
+      "annual_MWh": 10000000,
+      "source_id": "SYNTHETIC_DYNAMIC_STRUCTURE"
+    }
+  ]
+}

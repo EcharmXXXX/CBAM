@@ -11,7 +11,7 @@
 | 方案部分 | 本轮实现 | 边界 |
 |---|---|---|
 | §4 能源制氢 | 离网风光逐时优化和并网工业电价两种口径，交付上限、成本和排放可接入年度LP | 真实气象、工程成本和工业电价待校准；排放边界由输入因子决定 |
-| §6 供需与物料 | 单一粗钢当量需求；外生供给块；本地/跨节点中间品平衡；共享DRI/EAF；钢及HBI运费和弧容量 | 配方需要事前工程与质量校验；没有独立跨境矿石/废钢f变量 |
+| §6 供需与物料 | 单一粗钢当量需求；DR球团供给块；固定配方铁平衡；共址热/冷DRI与跨境HBI；共享DRI/EAF和运输走廊 | 供给量、品位、杂质上限和物流按项目录入；没有独立跨境矿石/废钢f变量 |
 | §7 动态能力 | 按投运、寿命、明确退役年、scope_share和各自利用率计算初始资产；逐选项×决策年新建；建设滞后；共享年度建设上限 | 自然/已公告退役和闲置；未实现内生提前退出及改造，不接受将改造伪装为无源新建 |
 | §8 排放账 | 责任、资格与物理工序边界分开；资源和运输单计；前体已在别处计量时不重复计工序排放/碳价 | 真实排放分量及其边界仍需校准 |
 | §9 CBAM | 按商品类别截零；q/x入境映射；替代范围与保留范围现金义务分开；保留责任与共同关税进入各情景 | 不替代现行法规核验，不支持未提供的海关特殊程序 |
@@ -84,9 +84,28 @@ python -m greenbook.run_model --instance PATH_TO_CALIBRATED_INPUT --demand-case 
 - 若同时计入DRI/EAF等工序直接用电，填 `input.direct_load_MW` 与项目的 `electricity_resource_id`，在表12填写 MWh/吨产品的电力系数。共同供电成本与排放按实际用电量分摊，氢价只承担制氢份额。已列入供给块的电费、电解设备成本及系统排放从其他对应项目中剔除。直接用电适用的GSC资格排放仍按表19填报。
 - 离网的 `renewable_power_evidence_id` 要填经核验的证据才能进入GSC资格判断。并网工业基准没有可追溯绿电采购证明，仍可供物理生产。钢材排放门槛和CBAM责任按各自既定口径计算。
 
+### Devlin 工序校准与候选节点
+
+在 `code/` 下运行以下合成示例。配置可与 `--energy-supply` 同时使用，先生成工序投入，再求解工程能源块。
+
+```sh
+python -m greenbook.run_model --synthetic-demo --devlin-inputs greenbook/examples/devlin_synthetic.json --output results/devlin_structure
+```
+
+- `pellet_blocks` 按节点、质量资源ID、独立供给块和年份，填干基球团的铁质量份额和脉石质量份额。上限取矿石对应的球团产量、球团厂产量和交付量的最小值，再减去其他已承诺用途。不同块的共同产能须先分配。可填 `private_price_per_t`，或输入矿石品位、论文价格年美元至本模型欧元的转换系数及到厂运费，利用论文式(1)生成情景价格。
+- `recipes` 改写表11已有配方对应的表12投入和DRI占用，保留其他共享池。路线可选 `hot_dri`、`cold_dri`、`hbi_production` 和 `hbi_eaf`。0%、25%及50%废钢配方可用S10的EAF电耗参考值；为每个选项准备独立配方ID、适用的表17–19记录及证书权属，年度LP在同一供给约束下选择。输入钢中Fe、炉料Fe和各铁回收率，按铁平衡计算炉料量。选填石灰、合金、电极资源，或在工序费用中列支。
+- `electricity_blocks` 可直接填表13所用的年度工序电量、价格及系统排放因子。也可通过 `--energy-supply` 对应的电力ID生成。离网工程块可设 `renewable_land_km2`，按光伏45、风电8 MW/km²的参考值计算共同用地，并允许覆盖系数。离网或并网电解块可设 `hydrogen_water_limit_m3_per_year`，用水参考强度为12 L/kgH₂，可按节点覆盖；只包括电解相关用水。共享地和水须在输入端向工程块分配额度。
+- 跨境HBI按发运吨计运输、排放及走廊容量，按入境吨映射表18，按实际入炉吨计算加热和原料用量。多个来源池共用同一条走廊时，填写相同的 `shared_corridor_id` 与共同上限。再加热电耗必须显式输入，因S10表列单位存在疑点；示例0.15 MWh/t仅用于测试。表17的合规强度、表19的全套排放分量按配方独立维护，`emissions_source_id` 需匹配表19。显式购电、球团或碳辅料已进入资源账的费用及系统排放从其他对应项目剔除。合成示例仅验证结构。
+- 候选节点可用 Devlin 的 Source Data 工作簿 `Fig 5` 按论文LCOS排序，需要 `openpyxl`。也可输入已完成项目工程优化的训练CSV和待筛选CSV，需要 `scikit-learn`；按国家分组嵌套验证，分别估算供电成本和剔除矿石与人工的钢成本，后两项再按节点加回。特征列以 `greenbook.analysis.devlin_screen.FEATURES` 为准，含安装年份以及风光小时/月度容量因子的均值、中位数和变异系数。训练CSV需有 `country`、`energy_EUR_per_MWh`、`lcos_ex_ore_labour_EUR_per_tcs`，候选CSV需有 `site_id`、`country`、`ore_EUR_per_tcs`、`labour_EUR_per_tcs`。筛选结果用于安排工程校准，供给、签发资格仍以核验后的节点输入为准。
+
+```sh
+python -m greenbook.analysis.devlin_screen --published-xlsx PATH_TO_Source_Data.xlsx --output results/devlin_sites.csv
+python -m greenbook.analysis.devlin_screen --training training.csv --candidates candidates.csv --output results/devlin_sites_fitted.csv
+```
+
 ## 已运行的结构检验
 
-当前37项自动测试通过，包含离网和并网手算、能源块进入年度模型与GSC资格核验、运费/资源缺失反例、多年投资、自然退役、年度碳价、残值、权属、保留前体责任及2026—2040完整窗口。
+当前40项自动测试通过，包含离网和并网手算、土地与电解用水、球团和氢基配方校准、HBI发运与入境量和共享运输限额、能源块进入年度模型与GSC资格核验，以及2026—2040完整窗口。
 
 2026—2040合成案例的N/C/G1/G05均可解，κ网格9点均得到最优解。合成案例中排放随κ并不单调，搜索据此保留逐点比较。此结果用于检查机制和搜索代码，不能解释为现实中GSC优于CBAM。
 

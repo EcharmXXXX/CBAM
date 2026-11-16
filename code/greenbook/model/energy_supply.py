@@ -33,6 +33,11 @@ class EnergyInput:
     direct_load_MW: list | None = None
     wind_emissions_kgCO2_MWh: float = 0.
     solar_emissions_kgCO2_MWh: float = 0.
+    renewable_land_km2: float | None = None
+    wind_MW_per_km2: float = 8.
+    solar_MW_per_km2: float = 45.
+    hydrogen_water_limit_m3_per_year: float | None = None
+    hydrogen_water_L_per_kg: float = 12.
 
 
 def solve_energy(data, *, power_mode="mixed"):
@@ -74,6 +79,15 @@ def solve_energy(data, *, power_mode="mixed"):
     annual_kg=float(np.dot(values["delivery_kg_per_hour"],durations)*annual_cycles)
     if annual_kg<=0:
         raise ValueError("A positive hydrogen-delivery contract is required")
+    for limit in (data.renewable_land_km2, data.hydrogen_water_limit_m3_per_year):
+        if limit is not None and (not np.isfinite(limit) or limit < 0):
+            raise ValueError("Land and water limits must be finite and nonnegative")
+    for rate in (data.wind_MW_per_km2, data.solar_MW_per_km2, data.hydrogen_water_L_per_kg):
+        if not np.isfinite(rate) or rate <= 0:
+            raise ValueError("Land densities and water intensity must be finite and positive")
+    annual_water_m3 = annual_kg * data.hydrogen_water_L_per_kg / 1000.
+    if data.hydrogen_water_limit_m3_per_year is not None and annual_water_m3 > data.hydrogen_water_limit_m3_per_year:
+        return dict(status="infeasible", message="Hydrogen delivery exceeds the annual water budget")
     cap={key:i for i,key in enumerate(names)}
     ops=("grid","electrolysis","charge","discharge","battery_soc","hydrogen_soc","curtailment")
     offset={key:len(names)+i*n for i,key in enumerate(ops)}
@@ -89,7 +103,13 @@ def solve_energy(data, *, power_mode="mixed"):
             bounds[offset["curtailment"]+h] = (0., 0.)
     eq=lil_matrix((3*n,size))
     rhs=np.zeros(3*n)
-    ub=lil_matrix((5*n,size))
+    land_is_bounded = data.renewable_land_km2 is not None and power_mode != "grid"
+    ub=lil_matrix((5*n + land_is_bounded,size))
+    ub_rhs = np.zeros(ub.shape[0])
+    if land_is_bounded:
+        ub[-1, cap["wind"]] = 1. / data.wind_MW_per_km2
+        ub[-1, cap["solar"]] = 1. / data.solar_MW_per_km2
+        ub_rhs[-1] = data.renewable_land_km2
     for h in range(n):
         prev=(h-1)%n
         ix=lambda key:offset[key]+h
@@ -112,7 +132,7 @@ def solve_energy(data, *, power_mode="mixed"):
             ("discharge","battery_power"),("battery_soc","battery_energy"),("hydrogen_soc","hydrogen_store"))):
             ub[5*h+j,ix(op)]=1
             ub[5*h+j,cap[capacity]]=-1
-    out=linprog(cost,A_eq=eq.tocsr(),b_eq=rhs,A_ub=ub.tocsr(),b_ub=np.zeros(5*n),bounds=bounds,method="highs")
+    out=linprog(cost,A_eq=eq.tocsr(),b_eq=rhs,A_ub=ub.tocsr(),b_ub=ub_rhs,bounds=bounds,method="highs")
     if not out.success:
         return dict(status="infeasible" if out.status==2 else "failed",message=out.message)
     capacities={key:float(out.x[i]) for key,i in cap.items()}
@@ -149,6 +169,8 @@ def solve_energy(data, *, power_mode="mixed"):
         annual_private_cost_EUR=float(out.fun), private_cost_EUR_per_kg=hydrogen_cost / annual_kg,
         annual_equipment_cost_EUR=equipment_cost, annual_grid_purchase_cost_EUR=grid_cost,
         annual_grid_purchase_MWh=float(grid_mwh.sum()), annual_electrolysis_MWh=electrolysis_mwh,
+        annual_hydrogen_water_m3=annual_water_m3,
+        renewable_land_km2=capacities["wind"]/data.wind_MW_per_km2 + capacities["solar"]/data.solar_MW_per_km2,
         annual_direct_electricity_MWh=direct_mwh, electricity_cost_EUR_MWh=power_price,
         electricity_emissions_kgCO2e_MWh=power_emission_factor,
         hydrogen_electricity_emissions_kgCO2e_per_kgH2=hydrogen_power_emissions / annual_kg,
