@@ -231,12 +231,16 @@ def write_instance(directory):
                 block_id=block, year=year, quantity_unit="t", upper_quantity=upper,
                 other_use_deducted=0, committed_other_use=0, resource_cost_per_unit=cost,
                 private_price_per_unit=cost, emission_factor=ef, cost_quality="toy",
+                hydrogen_production_method="water_electrolysis" if resource == "h2" else "",
+                renewable_power_evidence_id="TOY_RENEWABLE_POWER" if resource == "h2" else "",
+                electricity_emissions_tco2e_per_th2=ef if resource == "h2" else "",
                 source_id=TOY, value_status="scenario", notes="阶段A玩具供给块"))
     _write(directory / "13_resource_supply.csv",
         ["node_id", "resource_id", "resource_class", "block_id", "year", "quantity_unit",
          "upper_quantity", "other_use_deducted", "committed_other_use", "resource_cost_per_unit",
          "private_price_per_unit", "emission_factor", "cost_quality", "source_id",
-         "value_status", "notes"], rows)
+         "value_status", "notes", "hydrogen_production_method",
+         "renewable_power_evidence_id", "electricity_emissions_tco2e_per_th2"], rows)
 
     rows = []
     for origin, dest, commodity, freight, ef, capacity in TRANSPORT:
@@ -303,7 +307,7 @@ def write_instance(directory):
     for year in YEARS:
         rows.append(dict(rule_case="MAIN", certificate_class="GREEN_STEEL", year=year,
             t_primary=0.40, t_scrap=0.05, b_primary=2.00, b_scrap=0.20,
-            eligibility_boundary="STAGE_A_PROC_ONLY", reference_boundary="STAGE_A_PROC_ONLY",
+            eligibility_boundary="STAGE_A_PROC_PLUS_H2_POWER", reference_boundary="STAGE_A_PROC_ONLY",
             allowed_vintage="any", eu_use_rule="exclude_eu_delivery",
             mrv_eur_per_certificate=0.5, banking_allowed=0, cash_exit_allowed=0,
             source_id=TOY, value_status="scenario", notes="研究设定阈值，非行业标准"))
