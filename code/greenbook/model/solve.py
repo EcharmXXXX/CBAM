@@ -300,6 +300,7 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
         add_ub(coefs, float(row["upper_value"]) / scale)
 
     # 6) 运输弧容量（钢与跨节点投入品）
+    shared_corridors = {}
     for (origin, dest, commodity, t), arc in case.transport.items():
         capacity = float(arc["annual_capacity_t"])
         if not np.isfinite(capacity) or capacity < 0:
@@ -319,6 +320,16 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
                     if input_id == commodity and input_node == origin and destination == dest:
                         qi = var.pos[("q", rid, t)]
                         coefs[qi] = coefs.get(qi, 0.0) + coef
+        corridor = arc.get("shared_corridor_id", "").strip()
+        if corridor:
+            shared, limit = shared_corridors.setdefault((corridor, t), ({}, capacity))
+            if capacity != limit:
+                raise ValueError(f"Inconsistent shared transport capacity: {corridor}/{t}")
+            for i, value in coefs.items():
+                shared[i] = shared.get(i, 0.) + value
+        elif coefs:
+            add_ub(coefs, capacity / scale)
+    for coefs, capacity in shared_corridors.values():
         if coefs:
             add_ub(coefs, capacity / scale)
 

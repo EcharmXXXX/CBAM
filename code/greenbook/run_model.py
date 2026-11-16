@@ -7,6 +7,7 @@ import platform
 from pathlib import Path
 from datetime import datetime
 from .data_model import Case
+from .devlin_inputs import update_devlin_inputs
 from .energy_inputs import update_energy_supply
 from .make_dynamic_instance import write_dynamic_instance
 from .model.solve import solve_case
@@ -22,6 +23,7 @@ def main():
     parser.add_argument("--output",type=Path,required=True)
     parser.add_argument("--demand-case")
     parser.add_argument("--energy-supply",type=Path,help="JSON with islanded/grid engineering supply blocks")
+    parser.add_argument("--devlin-inputs",type=Path,help="JSON with DR pellets and DRI/HBI engineering recipes")
     parser.add_argument("--terminal-rule",choices=["remaining_life","zero"],default="remaining_life")
     parser.add_argument("--kappa-grid",type=float,nargs="*",default=[])
     args = parser.parse_args()
@@ -31,7 +33,10 @@ def main():
     instance = write_dynamic_instance(args.output/"synthetic_input") if args.synthetic_demo else args.instance
     case = Case.load(instance,demand_case=args.demand_case)
     energy_report = None
-    if args.energy_supply:
+    devlin_report = None
+    if args.devlin_inputs:
+        case, devlin_report, energy_report = update_devlin_inputs(case,args.devlin_inputs,energy_path=args.energy_supply)
+    elif args.energy_supply:
         energy_report = update_energy_supply(case,args.energy_supply)
     sols = {scenario:solve_case(case,scenario,terminal_rule=args.terminal_rule) for scenario in ("N","C","G1","G05")}
     write_tables(case,sols,args.output)
@@ -58,6 +63,20 @@ def main():
         (args.output/report_name).write_text(json.dumps(energy_report,ensure_ascii=False,indent=2),encoding="utf-8")
         manifest["energy_supply"] = dict(input=str(args.energy_supply.resolve()),
             sha256=hashlib.sha256(args.energy_supply.read_bytes()).hexdigest(), diagnostics=report_name)
+    if devlin_report is not None:
+        report_name = "devlin_engineering_inputs.json"
+        stages = ("shipped", "at_border", "charged")
+        devlin_report["hbi_flows_t"] = [
+            dict(scenario=scenario, recipe_id=row["recipe_id"], year=row["year"], **{
+                stage: row[f"hbi_{stage}_t_per_tcs"] * float(sol.q[(row["recipe_id"], row["year"])]) * 1e6
+                for stage in stages
+            })
+            for scenario, sol in sols.items() if sol.status == "optimal"
+            for row in devlin_report["recipes"] if row["route"] == "hbi_eaf"
+        ]
+        (args.output/report_name).write_text(json.dumps(devlin_report,ensure_ascii=False,indent=2),encoding="utf-8")
+        manifest["devlin_inputs"] = dict(input=str(args.devlin_inputs.resolve()),
+            sha256=hashlib.sha256(args.devlin_inputs.read_bytes()).hexdigest(), diagnostics=report_name)
     if args.kappa_grid:
         manifest["policy_search"] = search(case,args.kappa_grid,args.output,terminal_rule=args.terminal_rule)
     (args.output/"run_manifest.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
