@@ -11,6 +11,7 @@
 from dataclasses import dataclass, field
 import numpy as np
 from scipy.optimize import linprog
+from scipy.sparse import coo_matrix
 
 from .build_recipes import build as build_recipes
 from .build_border import build as build_border
@@ -39,6 +40,9 @@ class Solution:
     costs: dict = field(default_factory=dict)       # 分项折现成本 M€
     emissions: dict = field(default_factory=dict)   # t -> {proc, supply, transport, total} MtCO2e
     kappa: float = 0.0
+    annual_costs: dict = field(default_factory=dict)  # undiscounted M EUR/year
+    diagnostics: dict = field(default_factory=dict)
+    capacity_rent: dict = field(default_factory=dict)
 
 
 class _Vars:
@@ -56,20 +60,32 @@ class _Vars:
         return len(self.keys)
 
 
-def solve_case(case, scenario):
+def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_life"):
+    if terminal_rule not in ("remaining_life", "zero"):
+        raise ValueError("Unknown terminal rule")
     recipes = build_recipes(case)
     crossings = build_border(case)
     pools, options = build_dynamic(case)
     certs = build_certificate(case, recipes)
     years = case.years
+    if not years or len({key[2] for key in case.demand}) != 1:
+        raise ValueError("Exactly one nonempty demand_case must be selected")
+    if any(not np.isfinite(value) or value < 0 for value in case.demand.values()):
+        raise ValueError("Demand must contain finite nonnegative quantities")
     final_year = years[-1]
     scale = 1e6
 
     rate = float(case.param("COMMON", "discount_rate"))
     beta = {t: (1 + rate) ** (-(t - years[0])) for t in years}
-    origin_price = {region: float(case.param("COMMON", "origin_carbon_price", region))
-                    for region in case.regions}
-    kappa = float(case.param(scenario, "kappa") or 0.0)
+    origin_price = {(region, t): float(case.param("COMMON", "origin_carbon_price", region, year=t))
+                    for region in case.regions for t in years}
+    kappa = float(kappa_override if kappa_override is not None else (case.param(scenario, "kappa") or 0.0))
+    if kappa < 0 or not np.isfinite(kappa):
+        raise ValueError("Invalid kappa")
+    if scenario not in ("N", "C") and not scenario.startswith("G"):
+        raise ValueError(f"Unknown scenario: {scenario}")
+    if scenario in ("N", "C") and kappa:
+        raise ValueError("N and C cannot carry a certificate obligation")
     cbam_active = scenario == "C"
     clearing_active = kappa > 0
 
@@ -82,7 +98,7 @@ def solve_case(case, scenario):
         if recipe.is_steel:
             for d in case.regions:
                 var.add(("x", rid, d, t))
-    for oid, option in options.items():
+    for (oid, decision_year), option in options.items():
         var.add(("inv", oid, option.decision_year))
     for (node, res, block, t) in case.resources:
         var.add(("u", node, res, block, t))
@@ -99,11 +115,13 @@ def solve_case(case, scenario):
     cost_invest = np.zeros(n)
     cost_mrv = np.zeros(n)
     cost_cbam = np.zeros(n)
+    cost_retained = np.zeros(n)
+    cost_tariff = np.zeros(n)
 
     for (rid, t), recipe in recipes.items():
         qi = var.pos[("q", rid, t)]
         opex = beta[t] * recipe.opex_eur_per_unit
-        tax = beta[t] * sum(origin_price[country] * ef for country, ef in recipe.e_taxed.items())
+        tax = beta[t] * sum(origin_price[(country, t)] * ef for country, ef in recipe.e_taxed.items())
         cost_opex[qi] += opex
         cost_tax[qi] += tax
         c[qi] += opex + tax
@@ -111,7 +129,9 @@ def solve_case(case, scenario):
         for input_id, node, coef, destination in recipe.inputs:
             if destination and node != destination:
                 arc = case.transport[(node, destination, input_id, t)]
-                cost_transport[qi] += beta[t] * coef * float(arc["private_freight_eur_per_t"])
+                freight = beta[t] * coef * float(arc["private_freight_eur_per_t"])
+                cost_transport[qi] += freight
+                c[qi] += freight
 
     for (rid, t), recipe in recipes.items():
         if not recipe.is_steel:
@@ -129,7 +149,7 @@ def solve_case(case, scenario):
         cost_resource[ui] += price
         c[ui] += price
 
-    for oid, option in options.items():
+    for (oid, decision_year), option in options.items():
         ii = var.pos[("inv", oid, option.decision_year)]
         # §11.1：完整CAPEX按开工（决策年）只计一次，不另收年金；
         # 期末按剩余寿命比例退残值（§11.1），FOM按投运年份计。
@@ -140,7 +160,7 @@ def solve_case(case, scenario):
             if is_available(option, option.decision_year, t):
                 c[ii] += beta[t] * option.fom
                 cost_invest[ii] += beta[t] * option.fom
-        residual = terminal_residual(option, option.decision_year, final_year)
+        residual = terminal_residual(option, option.decision_year, final_year) if terminal_rule == "remaining_life" else 0.
         c[ii] -= beta[final_year] * residual
         cost_invest[ii] -= beta[final_year] * residual
 
@@ -150,21 +170,24 @@ def solve_case(case, scenario):
         cost_mrv[zi] += fee
         c[zi] += fee
 
-    if cbam_active:
-        for (crossing_class, t), crossing in crossings.items():
-            for kind, rid, destination, coef in crossing.variable_terms():
-                if kind == "q":
-                    idx = var.pos[("q", rid, t)]
-                else:
-                    idx = var.pos[("x", rid, destination, t)]
+    for (crossing_class, t), crossing in crossings.items():
+        row = case.border_rules[(crossing_class, t)]
+        for kind, rid, destination, coef in crossing.variable_terms():
+            idx = var.pos[("q", rid, t)] if kind == "q" else var.pos[("x", rid, destination, t)]
+            tariff = beta[t] * float(row.get("tariff_eur_per_t_goods") or 0.) * coef
+            cost_tariff[idx] += tariff
+            c[idx] += tariff
+            if cbam_active or not crossing.replaced:
                 pay = beta[t] * crossing.h * crossing.pay_price * coef
-                cost_cbam[idx] += pay
+                vector = cost_cbam if crossing.replaced else cost_retained
+                vector[idx] += pay
                 c[idx] += pay
 
     # ---- 约束 ----
     eq_rows, eq_rhs = [], []
     ub_rows, ub_rhs = [], []
     clearing_row = {}
+    capacity_rows = {}
 
     def add_eq(coefs, rhs):
         eq_rows.append(coefs)
@@ -178,6 +201,8 @@ def solve_case(case, scenario):
     for (region, grade, demand_case, t), demand in case.demand.items():
         coefs = {}
         for rid in case.steel_recipe_ids:
+            if (rid, t) not in recipes or recipes[(rid, t)].grade != grade:
+                continue
             xi = var.pos[("x", rid, region, t)]
             coefs[xi] = coefs.get(xi, 0.0) + 1.0
         add_eq(coefs, demand / scale)
@@ -195,6 +220,15 @@ def solve_case(case, scenario):
 
     # 3) 资源平衡（式5）：投入 = 供给块之和
     resource_keys = sorted({(node, res, t) for (node, res, block, t) in case.resources})
+    available_resources = set(resource_keys)
+    produced_intermediates = {(node, commodity, year)
+                              for (rid, year), recipe in recipes.items()
+                              for commodity, node, _coef in recipe.outputs}
+    for (rid, year), recipe in recipes.items():
+        for commodity, node, _coef, destination in recipe.inputs:
+            key = (node, commodity, year)
+            if key not in available_resources and key not in produced_intermediates:
+                raise ValueError(f"Missing resource supply or intermediate output for {rid}: {key}")
     for node, res, t in resource_keys:
         coefs = {}
         for (rid, tt), recipe in recipes.items():
@@ -211,26 +245,24 @@ def solve_case(case, scenario):
         if coefs:
             add_eq(coefs, 0.0)
 
-    # 4) 中间品平衡（HBI，式6）：跨节点投入品 产出 = 消费；本地投入走资源平衡
-    intermediates = sorted({(input_id, node, t)
-                            for (rid, t2), recipe in recipes.items() for t in years
-                            for (input_id, node, _c, dest) in recipe.inputs
-                            if dest and node != dest})
-    for commodity, node, t in intermediates:
+    # Intermediate production and consumption share exactly one balance per
+    # commodity/node/year, including local and cross-node consumption. Exogenous
+    # supply for the same product is rejected to avoid duplicated accounting.
+    if produced_intermediates & available_resources:
+        raise ValueError("A commodity cannot have both implicit intermediate production and external supply blocks")
+    for node, commodity, t in sorted(produced_intermediates):
         coefs = {}
         for (rid, tt), recipe in recipes.items():
             if tt != t:
                 continue
-            for input_id, input_node, coef, dest in recipe.inputs:
-                if input_id == commodity and input_node == node and dest and dest != input_node:
-                    qi = var.pos[("q", rid, t)]
-                    coefs[qi] = coefs.get(qi, 0.0) - coef
+            qi = var.pos[("q", rid, t)]
+            for input_id, input_node, coef, _dest in recipe.inputs:
+                if (input_id, input_node) == (commodity, node):
+                    coefs[qi] = coefs.get(qi, 0.) - coef
             for out_id, out_node, coef in recipe.outputs:
-                if out_id == commodity and out_node == node:
-                    qi = var.pos[("q", rid, t)]
-                    coefs[qi] = coefs.get(qi, 0.0) + coef
-        if coefs:
-            add_eq(coefs, 0.0)
+                if (out_id, out_node) == (commodity, node):
+                    coefs[qi] = coefs.get(qi, 0.) + coef
+        add_eq(coefs, 0.)
 
     # 5) 共享能力（式4）：占用 ≤ 利用率 × (初始 + 新批次)
     for pool_id, pool in pools.items():
@@ -243,19 +275,35 @@ def solve_case(case, scenario):
                     if used_pool == pool_id:
                         qi = var.pos[("q", rid, t)]
                         coefs[qi] = coefs.get(qi, 0.0) + coef
-            if not coefs:
-                continue
-            for oid, option in options.items():
+            for (oid, decision_year), option in options.items():
                 if option.pool_id == pool_id and is_available(option, option.decision_year, t):
                     ii = var.pos[("inv", oid, option.decision_year)]
                     coefs[ii] = coefs.get(ii, 0.0) - option.max_utilization
-            add_ub(coefs, pool.utilization * pool.initial_capacity / scale)
+            add_ub(coefs, pool.available(t) / scale)
+            capacity_rows[(pool_id, t)] = len(ub_rows) - 1
+
+    # Shared annual construction limits across alternative investment options.
+    for row in case.build_limits:
+        if row["limit_kind"] != "new_build":
+            raise ValueError("Only new_build shared limits are implemented")
+        year = int(row["year"])
+        if year not in years:
+            continue
+        coefs = {}
+        linked = row.get("linked_option_id", "").strip()
+        target = f"{row['node_id']}_{row['process_or_resource']}"
+        for (oid, decision_year), option in options.items():
+            if decision_year == year and (oid == linked if linked else option.pool_id == target):
+                coefs[var.pos[("inv", oid, decision_year)]] = 1.
+        if not coefs:
+            raise ValueError(f"Build limit has no matching investment: {row['limit_id']}")
+        add_ub(coefs, float(row["upper_value"]) / scale)
 
     # 6) 运输弧容量（钢与跨节点投入品）
     for (origin, dest, commodity, t), arc in case.transport.items():
         capacity = float(arc["annual_capacity_t"])
-        if capacity >= LARGE_ARC:
-            continue
+        if not np.isfinite(capacity) or capacity < 0:
+            raise ValueError("Transport capacity must be finite and nonnegative")
         coefs = {}
         if commodity == "steel":
             for rid in case.steel_recipe_ids:
@@ -279,10 +327,23 @@ def solve_case(case, scenario):
         zi = var.pos[("z", rid, t)]
         coefs = {zi: 1.0}
         for d in case.regions:
-            if certs.attribute_use(rid, d, case) > 0:
+            if certs.attribute_use(rid, d, case, t) > 0:
                 xi = var.pos[("x", rid, d, t)]
                 coefs[xi] = coefs.get(xi, 0.0) - rho
         add_ub(coefs, 0.0)
+
+    # Verified absolute rights are joint caps, not an extra subtraction from rho.
+    for row in case.attribute_rights:
+        t = int(row["year"])
+        if t not in years:
+            continue
+        rid = row.get("recipe_id", "").strip()
+        plant = row.get("plant_id", "").strip()
+        linked = [r for (r, year) in certs.eligible if year == t and
+                  (r == rid if rid else case.recipes[(r,t)].get("plant_id", "") == plant and bool(plant))]
+        if not linked:
+            raise ValueError("Absolute attribute rights require a verified recipe_id or recipe-to-plant mapping")
+        add_ub({var.pos[("z", r, t)]: 1. for r in linked}, float(row["available_rights_tcs"]) / scale)
 
     # 8) 出清（式15）
     if clearing_active:
@@ -294,7 +355,7 @@ def solve_case(case, scenario):
                 zi = var.pos[("z", rid, t)]
                 coefs[zi] = coefs.get(zi, 0.0) - v
             for (crossing_class, tt), crossing in crossings.items():
-                if tt != t:
+                if tt != t or not crossing.replaced:
                     continue
                 for kind, rid, destination, coef in crossing.variable_terms():
                     if kind == "q":
@@ -307,21 +368,32 @@ def solve_case(case, scenario):
 
     # ---- 边界 ----
     bounds = [(0, None)] * n
+    demand_pairs = {(region, grade, year) for region, grade, _case, year in case.demand}
+    for (rid, t), recipe in recipes.items():
+        if recipe.is_steel:
+            for region in case.regions:
+                if (region, recipe.grade, t) not in demand_pairs:
+                    bounds[var.pos[("x", rid, region, t)]] = (0., 0.)
+    if not clearing_active:
+        for rid, t in certs.eligible:
+            bounds[var.pos[("z", rid, t)]] = (0., 0.)
     for (node, res, block, t), row in case.resources.items():
         ui = var.pos[("u", node, res, block, t)]
         bounds[ui] = (0.0, float(row["upper_quantity"]) / scale)
-    for oid, option in options.items():
+    for (oid, decision_year), option in options.items():
         ii = var.pos[("inv", oid, option.decision_year)]
         bounds[ii] = (0.0, option.build_limit / scale)
 
     # ---- 求解 ----
     a_eq = _dense(eq_rows, n)
     a_ub = _dense(ub_rows, n)
-    res = linprog(c, A_ub=a_ub, b_ub=np.array(ub_rhs), A_eq=a_eq, b_eq=np.array(eq_rhs),
+    res = linprog(c, A_ub=a_ub, b_ub=np.array(ub_rhs) if ub_rows else None, A_eq=a_eq, b_eq=np.array(eq_rhs) if eq_rows else None,
                   bounds=bounds, method="highs")
     if not res.success:
-        return Solution(scenario=scenario, status=f"infeasible: {res.message}",
-                        objective_meur=float("nan"), kappa=kappa)
+        status = {1: "limit_reached", 2: "infeasible", 3: "unbounded", 4: "solver_error"}.get(res.status, "failed")
+        return Solution(scenario=scenario, status=f"{status}: {res.message}",
+                        objective_meur=float("nan"), kappa=kappa,
+                        diagnostics={"solver_status": int(res.status), "success": False})
 
     values = res.x
     get = lambda key: values[var.pos[key]]
@@ -341,7 +413,7 @@ def solve_case(case, scenario):
             total += coef * (x.get(key) if kind == "x" else q.get(key, 0.0))
         y[(crossing_class, t)] = total
     for t in years:
-        L[t] = sum(crossings[(cc, tt)].h * y[(cc, t)] for (cc, tt) in crossings if tt == t)
+        L[t] = sum(crossings[(cc, tt)].h * y[(cc, t)] for (cc, tt) in crossings if tt == t and crossings[(cc,tt)].replaced)
         S[t] = sum(v * z.get((rid, tt), 0.0) for (rid, tt), (_c, _r, v) in certs.eligible.items()
                    if tt == t)
         if clearing_active:
@@ -358,8 +430,8 @@ def solve_case(case, scenario):
                     for used_pool, coef in recipe.capacity_use:
                         if used_pool == pool_id:
                             used += coef * q[(rid, t)]
-            available = pool.utilization * pool.initial_capacity / scale
-            for oid, option in options.items():
+            available = pool.available(t) / scale
+            for (oid, decision_year), option in options.items():
                 if option.pool_id == pool_id and is_available(option, option.decision_year, t):
                     available += option.max_utilization * inv[(oid, option.decision_year)]
             pool_usage[(pool_id, t)] = (used, available)
@@ -373,6 +445,8 @@ def solve_case(case, scenario):
         "origin_carbon_tax": float(cost_tax @ values),
         "cbam_payment": float(cost_cbam @ values),
         "mrv": float(cost_mrv @ values),
+        "unreplaced_border": float(cost_retained @ values),
+        "tariff": float(cost_tariff @ values),
     }
     costs["resource_cost_proxy"] = (costs["opex"] + costs["resource"] + costs["transport"]
                                      + costs["investment_net_of_residual"] + costs["mrv"])
@@ -399,16 +473,55 @@ def solve_case(case, scenario):
         emissions[t] = {"proc": proc, "supply": supply, "transport": transport,
                         "total": proc + supply + transport}
 
+    components = {"opex": cost_opex, "resource": cost_resource, "transport": cost_transport,
+                  "investment_net_of_residual": cost_invest, "origin_carbon_tax": cost_tax,
+                  "cbam_payment": cost_cbam, "mrv": cost_mrv,
+                  "unreplaced_border": cost_retained, "tariff": cost_tariff}
+    annual_costs = {t: {name: 0. for name in components} for t in years}
+    # Each variable is dated. Split investment's construction, annual FOM and
+    # terminal residual explicitly rather than dumping its whole PV in year v.
+    for key, idx in var.pos.items():
+        if key[0] == "inv":
+            continue
+        t = key[-1]
+        for name, vector in components.items():
+            annual_costs[t][name] += vector[idx] * values[idx] / beta[t]
+    for (oid, vy), option in options.items():
+        amount = inv[(oid,vy)]
+        annual_costs[vy]["investment_net_of_residual"] += option.capex * amount
+        for t in years:
+            if is_available(option, vy, t):
+                annual_costs[t]["investment_net_of_residual"] += option.fom * amount
+        residual = terminal_residual(option, vy, final_year) if terminal_rule == "remaining_life" else 0.
+        annual_costs[final_year]["investment_net_of_residual"] -= residual * amount
+    max_eq = float(np.max(np.abs(a_eq @ values - np.asarray(eq_rhs)))) if eq_rows else 0.
+    max_ub = max(0., float(np.max(a_ub @ values - np.asarray(ub_rhs)))) if ub_rows else 0.
+    bound_excess = max((max(0., values[i]-upper) for i,(_lower,upper) in enumerate(bounds) if upper is not None),default=0.)
+    violation = max(max_eq, max_ub, max(0., float(-values.min())),float(bound_excess))
+    objective_error = abs(sum(costs[k] for k in components) - float(res.fun))
+    if violation > 1e-6 or objective_error > max(1e-5,abs(res.fun)*1e-9):
+        raise RuntimeError("Solution feasibility or objective accounting check failed")
+    diagnostics = dict(success=True, solver_status=int(res.status), variables=n,
+                       equalities=len(eq_rows), inequalities=len(ub_rows),
+                       max_violation_Mt=violation, objective_component_error_Meur=objective_error,
+                       terminal_rule=terminal_rule,
+                       price_not_identified_zero_obligation_years=[t for t in years if L[t] < 1e-9])
+    capacity_rent = {key: max(0., -float(res.ineqlin.marginals[idx])/beta[key[1]])
+                     for key,idx in capacity_rows.items()}
     return Solution(scenario=scenario, status="optimal", objective_meur=float(res.fun),
                     q=q, x=x, u=u, z=z, inv=inv, y=y, L=L, S=S, price=price,
-                    pool_usage=pool_usage, costs=costs, emissions=emissions, kappa=kappa)
+                    pool_usage=pool_usage, costs=costs, emissions=emissions, kappa=kappa,
+                    annual_costs=annual_costs, diagnostics=diagnostics, capacity_rent=capacity_rent)
 
 
 def _dense(rows, n):
     if not rows:
         return None
-    matrix = np.zeros((len(rows), n))
+    row_ids, columns, data = [], [], []
     for i, coefs in enumerate(rows):
         for j, value in coefs.items():
-            matrix[i, j] = value
-    return matrix
+            if value:
+                row_ids.append(i)
+                columns.append(j)
+                data.append(value)
+    return coo_matrix((data, (row_ids, columns)), shape=(len(rows), n)).tocsr()

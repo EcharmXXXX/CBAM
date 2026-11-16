@@ -1,4 +1,4 @@
-﻿crossing_class,year,variable_kind,variable_key,coefficient,mapping_basis,customs_path,source_id,value_status,notes
+crossing_class,year,variable_kind,variable_key,coefficient,mapping_basis,customs_path,source_id,value_status,notes
 STEEL_X_BFBOF,2027,x,R_X_BFBOF|EU,1.0,goods_share,final_steel,TOY_STAGE_A,scenario,一次入境只映射一次
 STEEL_X_BFBOF,2028,x,R_X_BFBOF|EU,1.0,goods_share,final_steel,TOY_STAGE_A,scenario,一次入境只映射一次
 STEEL_X_BFBOF,2029,x,R_X_BFBOF|EU,1.0,goods_share,final_steel,TOY_STAGE_A,scenario,一次入境只映射一次

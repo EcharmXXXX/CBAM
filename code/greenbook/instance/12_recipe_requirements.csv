@@ -1,4 +1,4 @@
-﻿recipe_id,year,requirement_type,input_id,input_node,input_class,coefficient,unit,destination_node,source_id,value_status,notes
+recipe_id,year,requirement_type,input_id,input_node,input_class,coefficient,unit,destination_node,source_id,value_status,notes
 R_EU_BFBOF,2027,opex,nonresource_opex,EU,cost_or_capacity,90.0,eur_per_tcs,,TOY_STAGE_A,scenario,
 R_EU_BFBOF,2027,input,pellets,EU,commodity,1.6,t_per_tcs,EU,TOY_STAGE_A,scenario,
 R_EU_BFBOF,2027,capacity_pool,EU_BF,EU,cost_or_capacity,1.0,tcs_per_tcs,,TOY_STAGE_A,scenario,

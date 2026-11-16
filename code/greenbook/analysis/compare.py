@@ -1,5 +1,6 @@
 """运行 N / C / G(κ) 情景组并写出 §17.4 的最低结果表与比较摘要。"""
 import csv
+import json
 from pathlib import Path
 
 from ..model.solve import solve_case
@@ -24,6 +25,12 @@ def _write(path, header, rows):
 def write_tables(case, solutions, out_dir):
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    all_solutions = solutions
+    _write(out_dir / "solver_status.csv", ["scenario", "status", "objective_Meur", "max_violation_Mt"],
+           [dict(scenario=s, status=sol.status,
+                 objective_Meur=sol.objective_meur if sol.status == "optimal" else "",
+                 max_violation_Mt=sol.diagnostics.get("max_violation_Mt", "")) for s,sol in solutions.items()])
+    solutions = {s:sol for s,sol in solutions.items() if sol.status == "optimal"}
 
     production = []
     for scenario, sol in solutions.items():
@@ -65,8 +72,7 @@ def write_tables(case, solutions, out_dir):
                 issued_Mcerts=round(issued, 6), S_MtCO2=round(sol.S.get(t, 0.0), 6),
                 L_MtCO2=round(sol.L.get(t, 0.0), 6),
                 price_eur_per_tCO2=round(sol.price.get(t, 0.0), 4),
-                cbam_payment_Meur=round(
-                    sol.costs.get("cbam_payment", 0.0), 6) if t == case.years[0] else ""))
+                cbam_payment_Meur=round(sol.annual_costs[t]["cbam_payment"], 6)))
     _write(out_dir / "certificates_and_clearing.csv",
            ["scenario", "year", "kappa", "issued_Mcerts", "S_MtCO2", "L_MtCO2",
             "price_eur_per_tCO2", "cbam_payment_Meur"], certificates)
@@ -85,29 +91,43 @@ def write_tables(case, solutions, out_dir):
         for t in case.years:
             cert_transfer = sol.price.get(t, 0.0) * sol.S.get(t, 0.0)
             payments.append(dict(scenario=scenario, year=t,
-                cbam_payment_Meur=round(sol.costs["cbam_payment"], 6) if t == case.years[0] else 0.0,
+                cbam_payment_Meur=round(sol.annual_costs[t]["cbam_payment"], 6),
                 certificate_transfer_Meur=round(cert_transfer, 6),
-                origin_carbon_tax_Meur=round(sol.costs["origin_carbon_tax"], 6) if t == case.years[0] else 0.0))
+                origin_carbon_tax_Meur=round(sol.annual_costs[t]["origin_carbon_tax"], 6)))
     _write(out_dir / "payments.csv",
            ["scenario", "year", "cbam_payment_Meur", "certificate_transfer_Meur",
             "origin_carbon_tax_Meur"], payments)
 
-    _write_summary(case, solutions, out_dir / "summary.md")
+    annual = [dict(scenario=s, year=t, **parts) for s,sol in solutions.items() for t,parts in sol.annual_costs.items()]
+    _write(out_dir / "annual_costs_undiscounted.csv",
+           ["scenario", "year", "opex", "resource", "transport", "investment_net_of_residual", "origin_carbon_tax", "cbam_payment", "mrv", "unreplaced_border", "tariff"], annual)
+    _write(out_dir / "capacity_rents.csv", ["scenario", "pool", "year", "EUR_per_capacity_unit_year"],
+           [dict(scenario=s,pool=pool,year=t,EUR_per_capacity_unit_year=value) for s,sol in solutions.items() for (pool,t),value in sol.capacity_rent.items()])
+    (out_dir / "diagnostics.json").write_text(json.dumps({s:sol.diagnostics for s,sol in all_solutions.items()}, ensure_ascii=False,indent=2),encoding="utf-8")
+    _write_summary(case, all_solutions, out_dir / "summary.md")
     return out_dir / "summary.md"
 
 
 def _write_summary(case, solutions, path):
-    lines = ["# 阶段A最小实例：情景比较摘要", ""]
-    lines.append("玩具数据（TOY_STAGE_A），仅证明结构，不代表政策效果。")
+    lines = ["# CBAM-GSC模型运行摘要", ""]
+    statuses = {row.get("value_status", "unclassified") for row in case.recipes.values()}
+    lines.append(f"年份：{case.years[0]}—{case.years[-1]}；输入状态：{', '.join(sorted(statuses))}。")
+    if "scenario" in statuses:
+        lines.append("包含情景/合成输入；结构运行不构成真实政策效果。详见运行清单。")
     lines.append("")
-    lines.append("| 情景 | 累计SYS排放 MtCO2e | ΔE vs C | 目标成本 M€ | 资源成本代理 M€ | CBAM支出 M€ | 证书价格(2027) €/tCO2e |")
+    lines.append(f"| 情景 | 累计SYS排放 MtCO2e | ΔE vs C | 目标成本 M€ | 资源成本代理 M€ | CBAM支出PV M€ | 证书价格({case.years[0]}) €/tCO2e |")
     lines.append("|---|---:|---:|---:|---:|---:|---:|")
     reference = None
     for scenario, sol in solutions.items():
+        if sol.status != "optimal":
+            continue
         cumulative = sum(part["total"] for part in sol.emissions.values())
         if scenario == "C":
             reference = cumulative
     for scenario, sol in solutions.items():
+        if sol.status != "optimal":
+            lines.append(f"| {scenario} | 未求得最优解：{sol.status} | | | | | |")
+            continue
         cumulative = sum(part["total"] for part in sol.emissions.values())
         delta = "" if reference is None or scenario == "C" else round(cumulative - reference, 4)
         price0 = sol.price.get(case.years[0], 0.0)
@@ -117,7 +137,7 @@ def _write_summary(case, solutions, path):
     lines.append("")
     lines.append("说明：")
     lines.append("- 证书价格由出清约束对偶提取，未折现；N/C 情景无出清约束，价格为0。")
-    lines.append("- CBAM支出与原产地碳税为三年折现合计。")
-    lines.append("- 累计排放为2027—2029物理排放加总，不折现（§1）。")
+    lines.append("- 本摘要的目标与成本为全期折现合计；payments.csv和annual_costs_undiscounted.csv为逐年未折现现金流。")
+    lines.append(f"- 累计排放为{case.years[0]}—{case.years[-1]}物理排放加总，不折现。")
     lines.append("- G情景若主要通过进口缩减满足出清，需同时报告欧盟产出与进口变化（§12.2）。")
     path.write_text("\n".join(lines), encoding="utf-8")

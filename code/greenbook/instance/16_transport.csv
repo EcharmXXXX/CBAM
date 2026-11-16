@@ -1,4 +1,4 @@
-﻿origin_node,destination_node,commodity_class,year,mode,distance_km,private_freight_eur_per_t,resource_freight_eur_per_t,loss_fraction,emissions_tco2e_per_t,annual_capacity_t,trade_allowed,source_id,value_status,notes
+origin_node,destination_node,commodity_class,year,mode,distance_km,private_freight_eur_per_t,resource_freight_eur_per_t,loss_fraction,emissions_tco2e_per_t,annual_capacity_t,trade_allowed,source_id,value_status,notes
 EU,EU,steel,2027,sea_rail_toy,0,5.0,5.0,0.0,0.002,900000000,1,TOY_STAGE_A,scenario,阶段A玩具运输
 EU,EU,steel,2028,sea_rail_toy,0,5.0,5.0,0.0,0.002,900000000,1,TOY_STAGE_A,scenario,阶段A玩具运输
 EU,EU,steel,2029,sea_rail_toy,0,5.0,5.0,0.0,0.002,900000000,1,TOY_STAGE_A,scenario,阶段A玩具运输

@@ -21,7 +21,8 @@ H = {"STEEL_X_BFBOF": 1.85, "STEEL_X_SCRAP": 0.375, "STEEL_X_H2DRI": 0.15, "HBI_
 class StructureTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = Path(__file__).resolve().parents[2] / "review_artifacts" / "structural_test_run"
+        cls.tmp.mkdir(parents=True, exist_ok=True)
         cls.instance = write_instance(cls.tmp / "instance")
         cls.case = Case.load(cls.instance)
         cls.solutions = {s: solve_case(cls.case, s) for s in ("N", "C", "G1", "G05")}

@@ -1,4 +1,4 @@
-﻿scenario_id,parameter_id,location_key,year,numeric_value,text_value,unit,rule_version,parent_scenario,source_id,value_status,notes
+scenario_id,parameter_id,location_key,year,numeric_value,text_value,unit,rule_version,parent_scenario,source_id,value_status,notes
 COMMON,discount_rate,GLOBAL,,0.07,,1_per_year,STAGE_A,,TOY_STAGE_A,scenario,
 COMMON,origin_carbon_price,EU,,80.0,,eur_per_tco2e,STAGE_A,,TOY_STAGE_A,scenario,
 COMMON,origin_carbon_price,X,,20.0,,eur_per_tco2e,STAGE_A,,TOY_STAGE_A,scenario,

@@ -52,6 +52,10 @@ def build(case):
         e_taxed = {}
         for c in comps:
             share = _num_or_zero(c["ets_coverage_share"])
+            if not 0 <= share <= 1:
+                raise ValueError("ETS coverage share must lie between zero and one")
+            if share and _flag(c["included_elsewhere"]):
+                raise ValueError("Already counted precursor emissions cannot receive a second origin carbon charge")
             if share > 0:
                 country = c["emission_country"]
                 e_taxed[country] = e_taxed.get(country, 0.0) + _factor(c) * share
@@ -62,6 +66,8 @@ def build(case):
         if is_steel and row["certificate_class"].strip() != "NONE":
             rule = case.certificate_rules[("MAIN", year)]
             s = float(row["scrap_charge_share"])
+            if not 0 <= s <= 1:
+                raise ValueError(f"Invalid scrap share for {rid}/{year}")
             threshold = float(rule["t_primary"]) * (1 - s) + float(rule["t_scrap"]) * s
             benchmark = float(rule["b_primary"]) * (1 - s) + float(rule["b_scrap"]) * s
             if eA <= threshold:
@@ -85,5 +91,5 @@ def _flag(value):
 
 def _num_or_zero(value):
     if value is None or str(value).strip() == "":
-        return 0.0
+        raise ValueError("Missing ETS coverage share; explicitly supply zero for uncovered emissions")
     return float(value)

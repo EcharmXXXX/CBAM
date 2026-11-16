@@ -1,4 +1,4 @@
-﻿activity_kind,activity_id,year,component_id,emission_country,gas,factor,factor_unit,gwp_version,responsibility_included,eligibility_included,system_included,included_elsewhere,ets_coverage_share,boundary_version,source_id,value_status,notes
+activity_kind,activity_id,year,component_id,emission_country,gas,factor,factor_unit,gwp_version,responsibility_included,eligibility_included,system_included,included_elsewhere,ets_coverage_share,boundary_version,source_id,value_status,notes
 recipe,R_EU_BFBOF,2027,PROC,EU,CO2,1.9,tco2e_per_tcs,AR6,1,1,1,0,1.0,STAGE_A_PROC_ONLY,TOY_STAGE_A,scenario,阶段A只含工序分量；能源与上游供给排放另计于资源表
 recipe,R_EU_BFBOF,2028,PROC,EU,CO2,1.9,tco2e_per_tcs,AR6,1,1,1,0,1.0,STAGE_A_PROC_ONLY,TOY_STAGE_A,scenario,阶段A只含工序分量；能源与上游供给排放另计于资源表
 recipe,R_EU_BFBOF,2029,PROC,EU,CO2,1.9,tco2e_per_tcs,AR6,1,1,1,0,1.0,STAGE_A_PROC_ONLY,TOY_STAGE_A,scenario,阶段A只含工序分量；能源与上游供给排放另计于资源表

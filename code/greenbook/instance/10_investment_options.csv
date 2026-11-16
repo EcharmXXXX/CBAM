@@ -1,4 +1,4 @@
-﻿node_id,option_id,year,target_process,option_kind,source_process,capex_eur_per_tpy,fom_eur_per_tpy_year,nonresource_opex_eur_per_t,lead_years,life_years,conversion_ratio,max_utilization,capital_inclusions,payment_schedule_id,source_id,value_status,notes
+node_id,option_id,year,target_process,option_kind,source_process,capex_eur_per_tpy,fom_eur_per_tpy_year,nonresource_opex_eur_per_t,lead_years,life_years,conversion_ratio,max_utilization,capital_inclusions,payment_schedule_id,source_id,value_status,notes
 EU,INV_EU_DRI,2027,DRI,new_build,,600.0,20.0,0.0,2,20,1.0,0.9,full_capex_annualized_with_terminal_residual,FLAT,TOY_STAGE_A,scenario,阶段A玩具投资选项；决策年仅2027，建设期2年
 EU,INV_EU_EAF,2027,EAF,new_build,,350.0,12.0,0.0,2,25,1.0,0.9,full_capex_annualized_with_terminal_residual,FLAT,TOY_STAGE_A,scenario,阶段A玩具投资选项；决策年仅2027，建设期2年
 X,INV_X_DRI,2027,DRI,new_build,,520.0,16.0,0.0,2,20,1.0,0.9,full_capex_annualized_with_terminal_residual,FLAT,TOY_STAGE_A,scenario,阶段A玩具投资选项；决策年仅2027，建设期2年

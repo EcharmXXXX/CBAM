@@ -1,4 +1,4 @@
-﻿node_id,resource_id,resource_class,block_id,year,quantity_unit,upper_quantity,other_use_deducted,committed_other_use,resource_cost_per_unit,private_price_per_unit,emission_factor,cost_quality,source_id,value_status,notes
+node_id,resource_id,resource_class,block_id,year,quantity_unit,upper_quantity,other_use_deducted,committed_other_use,resource_cost_per_unit,private_price_per_unit,emission_factor,cost_quality,source_id,value_status,notes
 EU,scrap,scrap,S1,2027,t,15000000,0,0,180.0,180.0,0.1,toy,TOY_STAGE_A,scenario,阶段A玩具供给块
 EU,scrap,scrap,S1,2028,t,15000000,0,0,180.0,180.0,0.1,toy,TOY_STAGE_A,scenario,阶段A玩具供给块
 EU,scrap,scrap,S1,2029,t,15000000,0,0,180.0,180.0,0.1,toy,TOY_STAGE_A,scenario,阶段A玩具供给块

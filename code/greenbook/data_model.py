@@ -3,6 +3,7 @@
 只做类型转换和索引，不做任何默认补零；空值保持为 None。
 """
 import csv
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -15,7 +16,16 @@ def _rows(path):
 def _num(value):
     if value is None or str(value).strip() == "":
         return None
-    return float(str(value).strip())
+    result = float(str(value).strip())
+    if not math.isfinite(result):
+        raise ValueError("Non-finite numeric input")
+    return result
+
+
+def _put(index, key, value):
+    if key in index:
+        raise ValueError(f"Duplicate input key: {key}")
+    index[key] = value
 
 
 def _flag(value):
@@ -39,20 +49,27 @@ class Case:
     certificate_rules: dict  # (rule_case, year) -> row
     demand: dict            # (region, grade, demand_case, year) -> tcs
     assets: list
-    investments: dict       # option_id -> row
+    investments: dict       # (option_id, decision_year) -> row
     scenario_params: dict   # (scenario, parameter, location) -> float 或 str
     recipe_years: dict      # recipe_id -> (years)
+    attribute_rights: list = field(default_factory=list)
+    build_limits: list = field(default_factory=list)
 
-    def param(self, scenario, parameter, location="GLOBAL", default=None):
+    def param(self, scenario, parameter, location="GLOBAL", default=None, year=None):
+        if year is not None and (scenario, parameter, location, year) in self.scenario_params:
+            return self.scenario_params[(scenario, parameter, location, year)]
         return self.scenario_params.get((scenario, parameter, location), default)
 
     @classmethod
-    def load(cls, directory):
+    def load(cls, directory, demand_case=None):
         directory = Path(directory)
         recipe_rows = _rows(directory / "11_recipes.csv")
         recipes = {}
         for row in recipe_rows:
-            recipes[(row["recipe_id"], int(row["year"]))] = row
+            key = (row["recipe_id"], int(row["year"]))
+            if key in recipes:
+                raise ValueError(f"Duplicate recipe: {key}")
+            recipes[key] = row
         recipe_years = {}
         for rid, _ in recipes:
             recipe_years.setdefault(rid, tuple(t for (r, t) in recipes if r == rid))
@@ -70,40 +87,57 @@ class Case:
 
         resources = {}
         for row in _rows(directory / "13_resource_supply.csv"):
-            resources[(row["node_id"], row["resource_id"], row["block_id"], int(row["year"]))] = row
+            _put(resources, (row["node_id"], row["resource_id"], row["block_id"], int(row["year"])), row)
 
         transport = {}
         for row in _rows(directory / "16_transport.csv"):
-            transport[(row["origin_node"], row["destination_node"], row["commodity_class"],
-                       int(row["year"]))] = row
+            _put(transport, (row["origin_node"], row["destination_node"], row["commodity_class"], int(row["year"])), row)
 
         border_rules = {}
         for row in _rows(directory / "17_border_rules.csv"):
-            border_rules[(row["crossing_class"], int(row["year"]))] = row
+            _put(border_rules, (row["crossing_class"], int(row["year"])), row)
         border_map = {}
         for row in _rows(directory / "18_border_flow_map.csv"):
             border_map.setdefault((row["crossing_class"], int(row["year"])), []).append(row)
 
         cert_rules = {}
         for row in _rows(directory / "21_certificate_rules.csv"):
-            cert_rules[(row["rule_case"], int(row["year"]))] = row
+            _put(cert_rules, (row["rule_case"], int(row["year"])), row)
 
         demand = {}
-        for row in _rows(directory / "07_demand.csv"):
-            demand[(row["region_id"], row["grade_id"], row["demand_case"],
-                    int(row["year"]))] = _num(row["demand_tcs"])
+        demand_rows = _rows(directory / "07_demand.csv")
+        cases = {row["demand_case"] for row in demand_rows}
+        if demand_case is None:
+            if len(cases) != 1:
+                raise ValueError("Select one demand_case explicitly")
+            demand_case = next(iter(cases))
+        if demand_case not in cases:
+            raise ValueError(f"Unknown demand_case: {demand_case}")
+        for row in demand_rows:
+            if row["demand_case"] != demand_case:
+                continue
+            _put(demand, (row["region_id"], row["grade_id"], row["demand_case"], int(row["year"])), _num(row["demand_tcs"]))
         regions = tuple(sorted({key[0] for key in demand}))
         years = tuple(sorted({key[3] for key in demand}))
 
         assets = _rows(directory / "04_assets.csv")
         investments = {}
         for row in _rows(directory / "10_investment_options.csv"):
-            investments.setdefault(row["option_id"], row)
+            key = (row["option_id"], int(row["year"]))
+            if key in investments:
+                raise ValueError(f"Duplicate investment batch: {key}")
+            if row.get("option_kind", "new_build") != "new_build":
+                raise ValueError("Retrofit requires explicit source-vintage conversion constraints")
+            investments[key] = row
 
         params = {}
         for row in _rows(directory / "25_scenario_parameters.csv"):
             key = (row["scenario_id"], row["parameter_id"], row["location_key"])
+            if row.get("year", "").strip():
+                key += (int(row["year"]),)
             numeric = _num(row["numeric_value"])
+            if key in params:
+                raise ValueError(f"Duplicate scenario parameter: {key}")
             params[key] = numeric if numeric is not None else row["text_value"]
 
         eu_market = params.get(("COMMON", "eu_market", "GLOBAL"), "")
@@ -112,4 +146,6 @@ class Case:
                    emission_components=components, resources=resources, transport=transport,
                    border_rules=border_rules, border_map=border_map, certificate_rules=cert_rules,
                    demand=demand, assets=assets, investments=investments,
-                   scenario_params=params, recipe_years=recipe_years)
+                   scenario_params=params, recipe_years=recipe_years,
+                   attribute_rights=_rows(directory / "22_attribute_rights.csv") if (directory / "22_attribute_rights.csv").exists() else [],
+                   build_limits=_rows(directory / "24_build_limits.csv") if (directory / "24_build_limits.csv").exists() else [])

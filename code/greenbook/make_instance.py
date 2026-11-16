@@ -13,14 +13,14 @@ TOY = "TOY_STAGE_A"
 
 RECIPES = {
     # recipe_id: (steel_node, iron_node, iron_tech, steel_tech, grade, scrap_share, cert_class)
-    "R_EU_BFBOF":   ("EU", "EU", "BF",    "BOF",      "FLAT", 0.0, "NONE"),
-    "R_EU_SCRAP":   ("EU", "EU", "",      "EAF",      "FLAT", 1.0, "NONE"),
-    "R_EU_H2DRI":   ("EU", "EU", "H2DRI", "EAF",      "FLAT", 0.0, "GREEN_STEEL"),
-    "R_EU_HBIEAF":  ("EU", "X",  "HBI",   "EAF",      "FLAT", 0.0, "NONE"),
+    "R_EU_BFBOF":   ("EU", "EU", "BF",    "BOF",      "STEEL_AGG", 0.0, "NONE"),
+    "R_EU_SCRAP":   ("EU", "EU", "",      "EAF",      "STEEL_AGG", 1.0, "NONE"),
+    "R_EU_H2DRI":   ("EU", "EU", "H2DRI", "EAF",      "STEEL_AGG", 0.0, "GREEN_STEEL"),
+    "R_EU_HBIEAF":  ("EU", "X",  "HBI",   "EAF",      "STEEL_AGG", 0.0, "NONE"),
     "R_X_HBIPROD":  ("X",  "X",  "H2DRI", "HBIPROD",  "",     0.0, "NONE"),
-    "R_X_BFBOF":    ("X",  "X",  "BF",    "BOF",      "FLAT", 0.0, "NONE"),
-    "R_X_SCRAP":    ("X",  "X",  "",      "EAF",      "FLAT", 1.0, "NONE"),
-    "R_X_H2DRI":    ("X",  "X",  "H2DRI", "EAF",      "FLAT", 0.0, "GREEN_STEEL"),
+    "R_X_BFBOF":    ("X",  "X",  "BF",    "BOF",      "STEEL_AGG", 0.0, "NONE"),
+    "R_X_SCRAP":    ("X",  "X",  "",      "EAF",      "STEEL_AGG", 1.0, "NONE"),
+    "R_X_H2DRI":    ("X",  "X",  "H2DRI", "EAF",      "STEEL_AGG", 0.0, "GREEN_STEEL"),
 }
 
 # (requirement_type, input_id, input_node, coefficient, unit, destination_node)
@@ -161,7 +161,7 @@ def write_instance(directory):
             process_id=tech.split("_")[0] if tech != "H2DRI" else "DRI", tech_id=tech,
             capacity_product=product, capacity_tpy=cap, max_utilization=0.9,
             design_life_years=40 if "BF" in pool else 30, scope_share=1.0, status="operating",
-            start_year=1995 if node == "EU" else 2000, retirement_year="",
+            start_year=2015, retirement_year="",
             reductant="coal" if tech == "BF" else ("hydrogen" if tech == "H2DRI" else "grid"),
             observed_output_t="", output_year="", asset_vintage_class="pre_2026",
             source_id=TOY, value_status="scenario", notes="阶段A玩具值"))
@@ -174,7 +174,7 @@ def write_instance(directory):
     rows = []
     for node in ("EU", "X"):
         for year in YEARS:
-            rows.append(dict(region_id=node, grade_id="FLAT", year=year, demand_case="BASE",
+            rows.append(dict(region_id=node, grade_id="STEEL_AGG", year=year, demand_case="BASE",
                 demand_tcs=DEMAND[node], consumption_definition="apparent_consumption_toy",
                 base_price_eur_per_tcs=500.0, price_elasticity="",
                 source_id=TOY, value_status="scenario", notes="阶段A玩具需求"))
@@ -188,7 +188,7 @@ def write_instance(directory):
             option_kind="new_build", source_process="", capex_eur_per_tpy=capex,
             fom_eur_per_tpy_year=fom, nonresource_opex_eur_per_t=0.0, lead_years=lead,
             life_years=life, conversion_ratio=1.0, max_utilization=0.9,
-            capital_inclusions="full_capex_annualized_with_terminal_residual",
+            capital_inclusions="full_capex_once_with_terminal_residual",
             payment_schedule_id="FLAT", source_id=TOY, value_status="scenario",
             notes="阶段A玩具投资选项；决策年仅2027，建设期2年"))
     _write(directory / "10_investment_options.csv",

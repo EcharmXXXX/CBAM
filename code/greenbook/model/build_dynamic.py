@@ -1,63 +1,74 @@
-"""初始资产批次、投资选项与可用性（§7）。
+"""Annual asset survival, new-build cohorts and conservative terminal value.
 
-- 初始池能力 = 04表资产汇总；利用率取池内最小值；
-- 新投资批次：决策年+建设期投产，寿命内可用；
-- 目标函数对年内批次收年金与FOM，期末按剩余寿命比例给残值。
+Full CAPEX is paid once at decision; operating FOM during service. Natural and
+announced retirement are supported. Endogenous closure and conversion require
+additional source-vintage constraints and cannot be supplied as new builds.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class Pool:
     pool_id: str
-    initial_capacity: float   # tpy
+    initial_capacity: float
     utilization: float
+    available_by_year: dict = field(default_factory=dict)
+
+    def available(self, year):
+        return self.available_by_year.get(year, 0.)
 
 
 @dataclass
 class InvestmentOption:
     option_id: str
     pool_id: str
-    capex: float              # eur per tpy
-    fom: float                # eur per tpy per year
+    capex: float
+    fom: float
     lead_years: int
     life_years: int
     decision_year: int
-    build_limit: float        # tpy
+    build_limit: float
     max_utilization: float
-
-
-def annuity_factor(rate, life):
-    return rate / (1 - (1 + rate) ** (-life))
 
 
 def build(case):
     pools = {}
     for asset in case.assets:
-        pool = pools.setdefault(asset["pool_id"],
-                                Pool(asset["pool_id"], 0.0, float(asset["max_utilization"])))
-        pool.initial_capacity += float(asset["capacity_tpy"])
-        pool.utilization = min(pool.utilization, float(asset["max_utilization"]))
-
-    # 无初始资产的池（如 EU_DRI）也要建：配方占用与投资产能需要约束
+        pool = pools.setdefault(asset["pool_id"], Pool(asset["pool_id"], 0., 1.))
+        capacity = float(asset["capacity_tpy"]) * float(asset.get("scope_share") or 1.)
+        utilization = float(asset["max_utilization"])
+        start = int(asset["start_year"])
+        life = int(asset["design_life_years"])
+        stop = int(asset["retirement_year"]) if asset.get("retirement_year", "").strip() else start + life
+        if capacity < 0 or not 0 <= utilization <= 1 or stop < start or life <= 0:
+            raise ValueError(f"Invalid initial asset: {asset['asset_id']}")
+        status = asset.get("status", "operating")
+        if status not in ("operating", "operating_pre_retirement", "construction", "committed", "retired", "mothballed", "cancelled"):
+            raise ValueError(f"Unrecognised asset status: {status}")
+        for year in case.years:
+            if start <= year < stop and status not in ("retired", "mothballed", "cancelled"):
+                pool.available_by_year[year] = pool.available(year) + utilization * capacity
+        if start <= case.years[0] < stop and status not in ("retired", "mothballed", "cancelled"):
+            pool.initial_capacity += capacity
     for reqs in case.requirements.values():
         for req in reqs:
-            if req["requirement_type"] == "capacity_pool" and req["input_id"] not in pools:
-                pools[req["input_id"]] = Pool(req["input_id"], 0.0, 1.0)
-
+            if req["requirement_type"] == "capacity_pool":
+                key = req["input_id"]
+                pools.setdefault(key, Pool(key, 0., 1.))
     options = {}
-    for option_id, row in case.investments.items():
-        limit = case.param("COMMON", "build_limit", option_id)
-        options[option_id] = InvestmentOption(
-            option_id=option_id,
-            pool_id=f"{row['node_id']}_{row['target_process']}",
-            capex=float(row["capex_eur_per_tpy"]),
-            fom=float(row["fom_eur_per_tpy_year"]),
-            lead_years=int(row["lead_years"]),
-            life_years=int(row["life_years"]),
-            decision_year=int(row["year"]),
-            build_limit=float(limit),
-            max_utilization=float(row["max_utilization"]))
+    for (option_id, year), row in case.investments.items():
+        limit = case.param("COMMON", "build_limit", option_id, year=year)
+        if limit is None:
+            raise ValueError(f"Missing build limit: {option_id}/{year}")
+        option = InvestmentOption(option_id, f"{row['node_id']}_{row['target_process']}",
+            float(row["capex_eur_per_tpy"]), float(row["fom_eur_per_tpy_year"]),
+            int(row["lead_years"]), int(row["life_years"]), year, float(limit), float(row["max_utilization"]))
+        if option.life_years <= 0 or option.lead_years < 0 or option.build_limit < 0 or option.capex < 0 or not 0 <= option.max_utilization <= 1:
+            raise ValueError(f"Invalid investment batch: {option_id}/{year}")
+        if year not in case.years:
+            raise ValueError("Use the fixed committed-asset pipeline for pre-horizon investments")
+        pools.setdefault(option.pool_id, Pool(option.pool_id, 0., 1.))
+        options[(option_id, year)] = option
     return pools, options
 
 
@@ -71,8 +82,9 @@ def is_available(option, decision_year, year):
 
 
 def terminal_residual(option, decision_year, final_year):
-    """期末剩余寿命比例 × CAPEX，作为共同终端残值（§11.1）。"""
+    """Uncommissioned assets get zero; construction-in-progress is not refunded."""
     start = commission_year(option, decision_year)
-    years_used = final_year - start + 1
-    remaining = max(0.0, option.life_years - years_used)
-    return option.capex * remaining / option.life_years
+    if start > final_year:
+        return 0.
+    remaining = max(0., option.life_years - (final_year - start + 1))
+    return option.capex * min(1., remaining / option.life_years)
