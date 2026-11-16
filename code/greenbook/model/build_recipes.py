@@ -6,7 +6,10 @@
 - 排放分量含 included_elsewhere 标志，物理系统账不重复计入前体；
 - 资格χ与认可量v由冻结阈值T(s)、b(s)与eA、eR比较得到。
 """
+from collections import defaultdict
 from dataclasses import dataclass, field
+from functools import lru_cache
+from math import isfinite
 
 
 @dataclass
@@ -31,6 +34,7 @@ class Recipe:
 
 def build(case):
     recipes = {}
+    hydrogen_eligibility = _hydrogen_eligibility(case)
     for (rid, year), row in case.recipes.items():
         reqs = case.requirements[(rid, year)]
         opex = next(float(r["coefficient"]) for r in reqs if r["requirement_type"] == "opex")
@@ -64,13 +68,15 @@ def build(case):
         is_steel = bool(grade)
         chi, v = 0, 0.0
         if is_steel and row["certificate_class"].strip() != "NONE":
+            _, green_hydrogen_ok, electricity_emissions = hydrogen_eligibility(rid, year)
+            eA += electricity_emissions
             rule = case.certificate_rules[("MAIN", year)]
             s = float(row["scrap_charge_share"])
             if not 0 <= s <= 1:
                 raise ValueError(f"Invalid scrap share for {rid}/{year}")
             threshold = float(rule["t_primary"]) * (1 - s) + float(rule["t_scrap"]) * s
             benchmark = float(rule["b_primary"]) * (1 - s) + float(rule["b_scrap"]) * s
-            if eA <= threshold:
+            if green_hydrogen_ok and eA <= threshold:
                 chi = 1
                 v = max(0.0, benchmark - eR)
         recipes[(rid, year)] = Recipe(
@@ -79,6 +85,90 @@ def build(case):
             eR=eR, eA=eA, e_sys_proc=e_sys, e_taxed=e_taxed,
             inputs=inputs, outputs=outputs, capacity_use=caps, chi=chi, v=v)
     return recipes
+
+
+def _hydrogen_eligibility(case):
+    """Trace renewable electrolysis through the physical hydrogen and HBI balances.
+
+    The resource ID is the physical supply group. Split IDs by provenance and
+    electricity intensity so a qualifying recipe cannot consume another group.
+    """
+    hydrogen_blocks = defaultdict(list)
+    hbi_producers = defaultdict(list)
+    for (node, resource, _block, year), row in case.resources.items():
+        if resource == "h2" or resource.startswith("h2_") or row.get("resource_class") in ("h2", "hydrogen"):
+            hydrogen_blocks[(node, resource, year)].append(row)
+    for rid, year in case.recipes:
+        for req in case.requirements[(rid, year)]:
+            product = req["input_id"]
+            if req["requirement_type"] == "output" and _is_hbi(product):
+                hbi_producers[(req["input_node"], product, year)].append(
+                    (rid, float(req["coefficient"])))
+
+    @lru_cache(maxsize=None)
+    def trace(rid, year, downstream=()):
+        if rid in downstream:
+            return True, False, 0.0
+        iron_tech = case.recipes[(rid, year)].get("iron_tech", "").upper()
+        route_requires_trace = "H2" in iron_tech or iron_tech.startswith("HBI")
+        has_traced_input = False
+        uses_hydrogen = False
+        all_green = True
+        electricity = 0.0
+        for req in case.requirements[(rid, year)]:
+            if req["requirement_type"] != "input" or float(req["coefficient"]) <= 0:
+                continue
+            resource = req["input_id"]
+            key = (req["input_node"], resource, year)
+            if resource == "h2" or resource.startswith("h2_") or key in hydrogen_blocks:
+                has_traced_input = True
+                uses_hydrogen = True
+                factor = _green_electricity_factor(hydrogen_blocks.get(key, ()))
+            elif _is_hbi(resource):
+                has_traced_input = True
+                candidates = []
+                for producer, output in hbi_producers.get(key, ()):
+                    used, eligible, upstream_electricity = trace(producer, year, (*downstream, rid))
+                    candidates.append((used, eligible and output > 0,
+                                       upstream_electricity / output if output > 0 else 0.0))
+                # A single HBI pool may serve multiple recipes. Every possible
+                # producer must be traceable, with the same factor per tonne.
+                if candidates and all(not used and eligible for used, eligible, _ in candidates):
+                    continue
+                uses_hydrogen = True
+                factors = {value for _, _, value in candidates}
+                factor = (next(iter(factors)) if len(factors) == 1
+                          and all(used and eligible for used, eligible, _ in candidates) else None)
+            else:
+                continue
+            if factor is None:
+                all_green = False
+            else:
+                electricity += float(req["coefficient"]) * factor
+        unknown_route = route_requires_trace and not has_traced_input
+        return uses_hydrogen or unknown_route, all_green and not unknown_route, electricity
+
+    return trace
+
+
+def _is_hbi(resource):
+    return resource == "hbi" or resource.startswith("hbi_")
+
+
+def _green_electricity_factor(rows):
+    factors = set()
+    for row in rows:
+        if (row.get("hydrogen_production_method") != "water_electrolysis"
+                or not (row.get("renewable_power_evidence_id") or "").strip()):
+            return None
+        value = row.get("electricity_emissions_tco2e_per_th2")
+        if value is None or str(value).strip() == "":
+            return None
+        factor = float(value)
+        if not isfinite(factor) or factor < 0:
+            raise ValueError("Hydrogen electricity emissions must be finite and nonnegative")
+        factors.add(factor)
+    return next(iter(factors)) if len(factors) == 1 else None
 
 
 def _factor(component):
