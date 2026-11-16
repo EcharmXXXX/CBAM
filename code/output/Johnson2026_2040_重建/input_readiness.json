@@ -1,0 +1,34 @@
+{
+  "input_ready": false,
+  "optimization_results_available": false,
+  "start_year": 2026,
+  "end_year": 2040,
+  "production_periods": 15,
+  "required_parameter_end_year": 2043,
+  "input_rows": {
+    "initial_state.csv": 0,
+    "initial_reserves.csv": 0,
+    "committed_projects.csv": 0,
+    "annual_drivers.csv": 0,
+    "annual_policy.csv": 0,
+    "retirement_schedule.csv": 0,
+    "technical_parameters.csv": 0,
+    "route_mapping.csv": 0,
+    "uncovered_supply.csv": 0
+  },
+  "errors": [
+    "initial_state.csv: no calibrated data rows",
+    "initial_reserves.csv: no calibrated data rows",
+    "committed_projects.csv: no calibrated data rows",
+    "annual_drivers.csv: no calibrated data rows",
+    "annual_policy.csv: no calibrated data rows",
+    "retirement_schedule.csv: no calibrated data rows",
+    "technical_parameters.csv: no calibrated data rows",
+    "route_mapping.csv: no calibrated data rows",
+    "uncovered_supply.csv: no calibrated data rows",
+    "Initial region-route coverage incomplete: 33 missing pairs",
+    "Initial committed-project pipeline has not been reviewed; missing projects cannot be assumed zero",
+    "September 2026 snapshot has not been reconciled to the January 2026 initial state"
+  ],
+  "warning": "This is a preparation gate, not a complete physical/policy validator or an implemented optimisation engine"
+}

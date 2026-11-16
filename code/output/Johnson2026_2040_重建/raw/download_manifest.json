@@ -1,0 +1,30 @@
+[
+  {
+    "file": "gem_2026_operating_steel_capacity.csv",
+    "url": "https://docs.google.com/spreadsheets/d/1JRFtPluYp2TDaTpBo8_7KAPivE4S9IXnNCQVWLuzod8/export?format=csv&gid=1663214592",
+    "bytes": 5228,
+    "sha256": "b577c5a2b5343ba3d5e6cc3f172e5816836a6fb1f320c69a873874f084599d5e",
+    "status": "downloaded"
+  },
+  {
+    "file": "gem_2026_operating_dri_capacity.csv",
+    "url": "https://docs.google.com/spreadsheets/d/1_vLfBVQTC4snzHJRpZ7YHT8TJ1cnhtGNJOEq9nQOpTg/export?format=csv&gid=1861950790",
+    "bytes": 4159,
+    "sha256": "fc675b6fb38a5870065f0eb5f3474bc81e315b76753e199ce46ef02bd42c0be7",
+    "status": "downloaded"
+  },
+  {
+    "file": "gem_tracker_2026.html",
+    "url": "https://globalenergymonitor.org/projects/global-iron-steel-tracker/",
+    "bytes": 133567,
+    "sha256": "3bf89127dc4de8db58af22d32b003bf08242ae26c1fb2756127e8e10268b95fc",
+    "status": "downloaded"
+  },
+  {
+    "file": "worldsteel_figures_2026.html",
+    "url": "https://worldsteel.org/data/world-steel-in-figures/world-steel-in-figures-2026/",
+    "bytes": 430237,
+    "sha256": "421a03f5eac5057348051dde601bf6ce54555e2d879203a8a760c162d96f176e",
+    "status": "downloaded"
+  }
+]

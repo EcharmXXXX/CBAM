@@ -1,0 +1,48 @@
+{
+  "steel": {
+    "country_records": 79,
+    "published_world": {
+      "Total operating capacity": 2228380000.0,
+      "BOF": 1459156000.0,
+      "EAF": 720453000.0,
+      "IF": 27469000.0,
+      "other/ unspecified": 21302000.0,
+      "integrated total": 1645480000.0,
+      "non-integrated total": 582900000.0
+    },
+    "region_totals": {
+      "Total operating capacity": 2228380000.0,
+      "BOF": 1459156000.0,
+      "EAF": 720453000.0,
+      "IF": 27469000.0,
+      "other/ unspecified": 21302000.0,
+      "integrated total": 1645480000.0,
+      "non-integrated total": 582900000.0
+    }
+  },
+  "dri": {
+    "country_records": 91,
+    "published_world": {
+      "Total operating capacity": 153730000.0,
+      "coal (solid)": 27692000.0,
+      "gas (unknown type)": 22228000.0,
+      "syngas (reformed methane)": 93331000.0,
+      "hydrogen (blue)": 1000000.0,
+      "hydrogen (green)": 2824000.0,
+      "hydrogen (unknown)": 10000.0,
+      "waste gas recovery (coke oven)": 2355000.0,
+      "unknown": 4290000.0
+    },
+    "region_totals": {
+      "Total operating capacity": 153730000.0,
+      "coal (solid)": 27692000.0,
+      "gas (unknown type)": 22228000.0,
+      "syngas (reformed methane)": 93331000.0,
+      "hydrogen (blue)": 1000000.0,
+      "hydrogen (green)": 2824000.0,
+      "hydrogen (unknown)": 10000.0,
+      "waste gas recovery (coke oven)": 2355000.0,
+      "unknown": 4290000.0
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "start_year": 2026,
+  "end_year": 2040,
+  "production_periods": 15,
+  "construction_years": 3,
+  "parameter_end_year": 2043,
+  "initial_state_date": "2026-01-01",
+  "initial_state_basis": "observed_2026_reinitialization",
+  "use_2022_warmup": false,
+  "inherit_2025_model_state": false,
+  "inherit_2022_2024_hold_policy": false,
+  "route_scope": "original_three_routes_with_explicit_uncovered_capacity",
+  "observed_capacity_snapshot": "2026-09",
+  "snapshot_valid_for_initial_state": false,
+  "pipeline_review_complete": false,
+  "status": "data_preparation_only; not calibrated; no 2026--2040 solver results",
+  "modeled_routes": [
+    "BF-BOF",
+    "SCRAP-EAF",
+    "H2-DRI-EAF"
+  ],
+  "boundary": "three-route subsystem; excluded supply must be explicitly reconciled with total demand"
+}

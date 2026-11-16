@@ -1,0 +1,6 @@
+﻿asset_id,plant_id,node_id,pool_id,process_id,tech_id,capacity_product,capacity_tpy,max_utilization,design_life_years,scope_share,status,start_year,retirement_year,reductant,observed_output_t,output_year,asset_vintage_class,source_id,value_status,notes
+A_EU_BF,PL_EU,EU,EU_BF,BF,BF,tCS_year,60000000,0.9,40,1.0,operating,1995,,coal,,,pre_2026,TOY_STAGE_A,scenario,阶段A玩具值
+A_EU_EAF,PL_EU,EU,EU_EAF,EAF,EAF,tCS_year,25000000,0.9,30,1.0,operating,1995,,grid,,,pre_2026,TOY_STAGE_A,scenario,阶段A玩具值
+A_X_BF,PL_X,X,X_BF,BF,BF,tCS_year,70000000,0.9,40,1.0,operating,2000,,coal,,,pre_2026,TOY_STAGE_A,scenario,阶段A玩具值
+A_X_EAF,PL_X,X,X_EAF,EAF,EAF,tCS_year,15000000,0.9,30,1.0,operating,2000,,grid,,,pre_2026,TOY_STAGE_A,scenario,阶段A玩具值
+A_X_DRI,PL_X,X,X_DRI,DRI,H2DRI,tDRI_year,3000000,0.9,30,1.0,operating,2000,,hydrogen,,,pre_2026,TOY_STAGE_A,scenario,阶段A玩具值

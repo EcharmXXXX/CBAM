@@ -1,0 +1,133 @@
+﻿region,source_product,source_capacity_pool,reported_capacity,unit,candidate_model_route,allocation_status,snapshot,source_id
+China,crude_steel,BOF,898833000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+China,crude_steel,EAF,189571000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+China,crude_steel,IF,240000.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+China,crude_steel,other/ unspecified,0.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+EU27,crude_steel,BOF,95341000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+EU27,crude_steel,EAF,79085000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+EU27,crude_steel,IF,0.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+EU27,crude_steel,other/ unspecified,0.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+India,crude_steel,BOF,90663000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+India,crude_steel,EAF,26578000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+India,crude_steel,IF,13768000.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+India,crude_steel,other/ unspecified,14450000.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+Japan,crude_steel,BOF,76812000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+Japan,crude_steel,EAF,29088000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+Japan,crude_steel,IF,0.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+Japan,crude_steel,other/ unspecified,0.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+US,crude_steel,BOF,30651000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+US,crude_steel,EAF,81545000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+US,crude_steel,IF,0.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+US,crude_steel,other/ unspecified,0.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+Russia,crude_steel,BOF,51660000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+Russia,crude_steel,EAF,33355000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+Russia,crude_steel,IF,0.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+Russia,crude_steel,other/ unspecified,0.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+South Korea,crude_steel,BOF,53000000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+South Korea,crude_steel,EAF,27885000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+South Korea,crude_steel,IF,0.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+South Korea,crude_steel,other/ unspecified,0.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+Turkey,crude_steel,BOF,13102000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+Turkey,crude_steel,EAF,43230000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+Turkey,crude_steel,IF,0.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+Turkey,crude_steel,other/ unspecified,0.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+Brazil,crude_steel,BOF,32497000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+Brazil,crude_steel,EAF,10420000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+Brazil,crude_steel,IF,0.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+Brazil,crude_steel,other/ unspecified,0.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+Australia,crude_steel,BOF,4400000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+Australia,crude_steel,EAF,1530000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+Australia,crude_steel,IF,0.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+Australia,crude_steel,other/ unspecified,0.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+ROW,crude_steel,BOF,112197000.0,tCS/year,BF-BOF,candidate_only; validate BF/BOF link and initial-state date,2026-09,GEM_steel_2026_09
+ROW,crude_steel,EAF,198166000.0,tCS/year,,unallocated; feedstock and DRI linkage required,2026-09,GEM_steel_2026_09
+ROW,crude_steel,IF,13461000.0,tCS/year,,outside selected three routes,2026-09,GEM_steel_2026_09
+ROW,crude_steel,other/ unspecified,6852000.0,tCS/year,,outside selected three routes or unknown,2026-09,GEM_steel_2026_09
+China,DRI,coal (solid),300000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+China,DRI,gas (unknown type),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+China,DRI,syngas (reformed methane),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+China,DRI,hydrogen (blue),1000000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+China,DRI,hydrogen (green),0.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+China,DRI,hydrogen (unknown),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+China,DRI,waste gas recovery (coke oven),555000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+China,DRI,unknown,600000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+EU27,DRI,coal (solid),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+EU27,DRI,gas (unknown type),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+EU27,DRI,syngas (reformed methane),600000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+EU27,DRI,hydrogen (blue),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+EU27,DRI,hydrogen (green),0.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+EU27,DRI,hydrogen (unknown),10000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+EU27,DRI,waste gas recovery (coke oven),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+EU27,DRI,unknown,0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+India,DRI,coal (solid),22820000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+India,DRI,gas (unknown type),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+India,DRI,syngas (reformed methane),10730000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+India,DRI,hydrogen (blue),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+India,DRI,hydrogen (green),1200000.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+India,DRI,hydrogen (unknown),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+India,DRI,waste gas recovery (coke oven),1800000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+India,DRI,unknown,0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Japan,DRI,coal (solid),776000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Japan,DRI,gas (unknown type),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Japan,DRI,syngas (reformed methane),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Japan,DRI,hydrogen (blue),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Japan,DRI,hydrogen (green),0.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+Japan,DRI,hydrogen (unknown),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Japan,DRI,waste gas recovery (coke oven),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Japan,DRI,unknown,0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+US,DRI,coal (solid),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+US,DRI,gas (unknown type),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+US,DRI,syngas (reformed methane),6660000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+US,DRI,hydrogen (blue),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+US,DRI,hydrogen (green),0.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+US,DRI,hydrogen (unknown),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+US,DRI,waste gas recovery (coke oven),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+US,DRI,unknown,0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Russia,DRI,coal (solid),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Russia,DRI,gas (unknown type),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Russia,DRI,syngas (reformed methane),7780000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Russia,DRI,hydrogen (blue),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Russia,DRI,hydrogen (green),0.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+Russia,DRI,hydrogen (unknown),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Russia,DRI,waste gas recovery (coke oven),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Russia,DRI,unknown,0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+South Korea,DRI,coal (solid),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+South Korea,DRI,gas (unknown type),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+South Korea,DRI,syngas (reformed methane),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+South Korea,DRI,hydrogen (blue),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+South Korea,DRI,hydrogen (green),9000.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+South Korea,DRI,hydrogen (unknown),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+South Korea,DRI,waste gas recovery (coke oven),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+South Korea,DRI,unknown,0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Turkey,DRI,coal (solid),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Turkey,DRI,gas (unknown type),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Turkey,DRI,syngas (reformed methane),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Turkey,DRI,hydrogen (blue),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Turkey,DRI,hydrogen (green),0.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+Turkey,DRI,hydrogen (unknown),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Turkey,DRI,waste gas recovery (coke oven),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Turkey,DRI,unknown,0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Brazil,DRI,coal (solid),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Brazil,DRI,gas (unknown type),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Brazil,DRI,syngas (reformed methane),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Brazil,DRI,hydrogen (blue),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Brazil,DRI,hydrogen (green),0.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+Brazil,DRI,hydrogen (unknown),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Brazil,DRI,waste gas recovery (coke oven),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Brazil,DRI,unknown,0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Australia,DRI,coal (solid),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Australia,DRI,gas (unknown type),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Australia,DRI,syngas (reformed methane),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Australia,DRI,hydrogen (blue),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Australia,DRI,hydrogen (green),0.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+Australia,DRI,hydrogen (unknown),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Australia,DRI,waste gas recovery (coke oven),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+Australia,DRI,unknown,0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+ROW,DRI,coal (solid),3796000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+ROW,DRI,gas (unknown type),22228000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+ROW,DRI,syngas (reformed methane),67561000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+ROW,DRI,hydrogen (blue),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+ROW,DRI,hydrogen (green),1615000.0,tDRI/year,H2-DRI-EAF,iron capacity only; needs downstream EAF and conversion evidence,2026-09,GEM_dri_2026_09
+ROW,DRI,hydrogen (unknown),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+ROW,DRI,waste gas recovery (coke oven),0.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09
+ROW,DRI,unknown,3690000.0,tDRI/year,,outside green-H2 route or unknown; do not add to crude-steel capacity,2026-09,GEM_dri_2026_09

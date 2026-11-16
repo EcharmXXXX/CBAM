@@ -1,0 +1,12 @@
+﻿region,Total operating capacity,coal (solid),gas (unknown type),syngas (reformed methane),hydrogen (blue),hydrogen (green),hydrogen (unknown),waste gas recovery (coke oven),unknown,source_id,snapshot,unit,value_status,coverage
+China,2455000.0,300000.0,0.0,0.0,1000000.0,0.0,0.0,555000.0,600000.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+EU27,610000.0,0.0,0.0,600000.0,0.0,0.0,10000.0,0.0,0.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+India,36550000.0,22820000.0,0.0,10730000.0,0.0,1200000.0,0.0,1800000.0,0.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+Japan,776000.0,776000.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+US,6660000.0,0.0,0.0,6660000.0,0.0,0.0,0.0,0.0,0.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+Russia,7780000.0,0.0,0.0,7780000.0,0.0,0.0,0.0,0.0,0.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+South Korea,9000.0,0.0,0.0,0.0,0.0,9000.0,0.0,0.0,0.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+Turkey,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+Brazil,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+Australia,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+ROW,98890000.0,3796000.0,22228000.0,67561000.0,0.0,1615000.0,0.0,0.0,3690000.0,GEM_dri_2026_09,2026-09,tDRI/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero

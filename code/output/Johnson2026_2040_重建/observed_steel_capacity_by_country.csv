@@ -1,0 +1,80 @@
+﻿country,region,Total operating capacity,BOF,EAF,IF,other/ unspecified,integrated total,non-integrated total,source_id,snapshot,unit,value_status,coverage
+Algeria,ROW,8690000.0,0.0,8690000.0,0.0,0.0,8690000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Angola,ROW,500000.0,0.0,0.0,500000.0,0.0,0.0,500000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Argentina,ROW,7871000.0,3501000.0,4370000.0,0.0,0.0,7221000.0,650000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Australia,Australia,5930000.0,4400000.0,1530000.0,0.0,0.0,1200000.0,4730000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Austria,EU27,7570000.0,7570000.0,0.0,0.0,0.0,7570000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Azerbaijan,ROW,800000.0,0.0,800000.0,0.0,0.0,0.0,800000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Bahrain,ROW,1300000.0,0.0,1300000.0,0.0,0.0,1300000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Bangladesh,ROW,5171000.0,0.0,3040000.0,2131000.0,0.0,0.0,5171000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Belarus,ROW,3000000.0,0.0,3000000.0,0.0,0.0,0.0,3000000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Belgium,EU27,8200000.0,5200000.0,3000000.0,0.0,0.0,5200000.0,3000000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Bolivia,ROW,200000.0,0.0,200000.0,0.0,0.0,200000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Bosnia and Herzegovina,ROW,1940000.0,1140000.0,800000.0,0.0,0.0,1940000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Brazil,Brazil,42917000.0,32497000.0,10420000.0,0.0,0.0,36501000.0,6416000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Bulgaria,EU27,1400000.0,0.0,1400000.0,0.0,0.0,0.0,1400000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Canada,ROW,14550000.0,5800000.0,8750000.0,0.0,0.0,7600000.0,6950000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Chile,ROW,520000.0,0.0,520000.0,0.0,0.0,0.0,520000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+China,China,1088644000.0,898833000.0,189571000.0,240000.0,0.0,930810000.0,157834000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Czech Republic,EU27,2800000.0,2600000.0,200000.0,0.0,0.0,2800000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Egypt,ROW,15560000.0,0.0,15560000.0,0.0,0.0,11300000.0,4260000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Finland,EU27,4375000.0,2600000.0,1775000.0,0.0,0.0,2600000.0,1775000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+France,EU27,17450000.0,11850000.0,5600000.0,0.0,0.0,11850000.0,5600000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Germany,EU27,44720000.0,31520000.0,13200000.0,0.0,0.0,28620000.0,16100000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Ghana,ROW,800000.0,0.0,800000.0,0.0,0.0,0.0,800000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Greece,EU27,3150000.0,0.0,3150000.0,0.0,0.0,0.0,3150000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Guatemala,ROW,500000.0,0.0,500000.0,0.0,0.0,0.0,500000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+India,India,145459000.0,90663000.0,26578000.0,13768000.0,14450000.0,141826000.0,3633000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Indonesia,ROW,21400000.0,11980000.0,9420000.0,0.0,0.0,11980000.0,9420000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Iran,ROW,36758000.0,5100000.0,29723000.0,1935000.0,0.0,29750000.0,7008000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Iraq,ROW,3180000.0,0.0,3180000.0,0.0,0.0,0.0,3180000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Italy,EU27,31736000.0,7800000.0,23936000.0,0.0,0.0,7800000.0,23936000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Japan,Japan,105900000.0,76812000.0,29088000.0,0.0,0.0,67705000.0,38195000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Kazakhstan,ROW,6000000.0,6000000.0,0.0,0.0,0.0,6000000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Kenya,ROW,1000000.0,1000000.0,0.0,0.0,0.0,1000000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Kuwait,ROW,1200000.0,0.0,1200000.0,0.0,0.0,0.0,1200000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Libya,ROW,1710000.0,0.0,1710000.0,0.0,0.0,1710000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Luxembourg,EU27,3600000.0,0.0,3600000.0,0.0,0.0,0.0,3600000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Malaysia,ROW,11920000.0,6200000.0,4920000.0,800000.0,0.0,7100000.0,4820000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Mexico,ROW,23041000.0,2500000.0,20541000.0,0.0,0.0,10230000.0,12811000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Morocco,ROW,3320000.0,0.0,3320000.0,0.0,0.0,0.0,3320000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Myanmar,ROW,400000.0,0.0,400000.0,0.0,0.0,0.0,400000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Netherlands,EU27,7500000.0,7500000.0,0.0,0.0,0.0,7500000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+New Zealand,ROW,1320000.0,670000.0,650000.0,0.0,0.0,1320000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Nigeria,ROW,600000.0,0.0,600000.0,0.0,0.0,0.0,600000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+North Korea,ROW,10252000.0,4500000.0,3502000.0,0.0,2250000.0,9500000.0,752000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+North Macedonia,ROW,550000.0,0.0,550000.0,0.0,0.0,0.0,550000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Norway,ROW,770000.0,0.0,770000.0,0.0,0.0,0.0,770000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Oman,ROW,3200000.0,0.0,3200000.0,0.0,0.0,2500000.0,700000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Pakistan,ROW,2498000.0,0.0,450000.0,2048000.0,0.0,0.0,2498000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Peru,ROW,2000000.0,0.0,2000000.0,0.0,0.0,0.0,2000000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Philippines,ROW,4100000.0,2000000.0,2100000.0,0.0,0.0,2000000.0,2100000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Poland,EU27,10011000.0,5001000.0,5010000.0,0.0,0.0,5001000.0,5010000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Portugal,EU27,1700000.0,0.0,1700000.0,0.0,0.0,0.0,1700000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Qatar,ROW,2900000.0,0.0,2900000.0,0.0,0.0,2900000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Romania,EU27,1335000.0,0.0,1335000.0,0.0,0.0,0.0,1335000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Russia,Russia,85015000.0,51660000.0,33355000.0,0.0,0.0,67225000.0,17790000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Saudi Arabia,ROW,12000000.0,0.0,11650000.0,350000.0,0.0,8600000.0,3400000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Serbia,ROW,2699000.0,2199000.0,500000.0,0.0,0.0,2199000.0,500000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Singapore,ROW,750000.0,0.0,750000.0,0.0,0.0,0.0,750000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Slovakia,EU27,4500000.0,4500000.0,0.0,0.0,0.0,4500000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Slovenia,EU27,726000.0,0.0,726000.0,0.0,0.0,0.0,726000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+South Africa,ROW,4810000.0,3360000.0,1450000.0,0.0,0.0,3960000.0,850000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+South Korea,South Korea,80885000.0,53000000.0,27885000.0,0.0,0.0,57957000.0,22928000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Spain,EU27,18840000.0,5400000.0,13440000.0,0.0,0.0,0.0,18840000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Sweden,EU27,4813000.0,3800000.0,1013000.0,0.0,0.0,3813000.0,1000000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Switzerland,ROW,1370000.0,0.0,1370000.0,0.0,0.0,0.0,1370000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Syria,ROW,2400000.0,0.0,2400000.0,0.0,0.0,800000.0,1600000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Taiwan,ROW,24701000.0,15001000.0,9700000.0,0.0,0.0,16081000.0,8620000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Thailand,ROW,9285000.0,0.0,8555000.0,730000.0,0.0,0.0,9285000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Tunisia,ROW,200000.0,0.0,200000.0,0.0,0.0,0.0,200000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Türkiye,Turkey,56332000.0,13102000.0,43230000.0,0.0,0.0,13102000.0,43230000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Uganda,ROW,600000.0,0.0,600000.0,0.0,0.0,600000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Ukraine,ROW,18594000.0,11172000.0,3303000.0,17000.0,4102000.0,15274000.0,3320000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+United Arab Emirates,ROW,5100000.0,0.0,4500000.0,600000.0,0.0,3500000.0,1600000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+United Kingdom,ROW,6000000.0,4500000.0,1500000.0,0.0,0.0,4500000.0,1500000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+United States,US,112196000.0,30651000.0,81545000.0,0.0,0.0,33651000.0,78545000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Uzbekistan,ROW,1100000.0,0.0,1100000.0,0.0,0.0,0.0,1100000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Venezuela,ROW,1020000.0,0.0,1020000.0,0.0,0.0,1020000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Vietnam,ROW,39926000.0,25574000.0,9502000.0,4350000.0,500000.0,26874000.0,13052000.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census
+Zimbabwe,ROW,600000.0,0.0,600000.0,0.0,0.0,600000.0,0.0,GEM_steel_2026_09,2026-09,tCS/year,observed_snapshot,GEM tracked facilities; not a full census

@@ -1,0 +1,7 @@
+﻿region_id,grade_id,year,demand_case,demand_tcs,consumption_definition,base_price_eur_per_tcs,price_elasticity,source_id,value_status,notes
+EU,FLAT,2027,BASE,70000000,apparent_consumption_toy,500.0,,TOY_STAGE_A,scenario,阶段A玩具需求
+EU,FLAT,2028,BASE,70000000,apparent_consumption_toy,500.0,,TOY_STAGE_A,scenario,阶段A玩具需求
+EU,FLAT,2029,BASE,70000000,apparent_consumption_toy,500.0,,TOY_STAGE_A,scenario,阶段A玩具需求
+X,FLAT,2027,BASE,40000000,apparent_consumption_toy,500.0,,TOY_STAGE_A,scenario,阶段A玩具需求
+X,FLAT,2028,BASE,40000000,apparent_consumption_toy,500.0,,TOY_STAGE_A,scenario,阶段A玩具需求
+X,FLAT,2029,BASE,40000000,apparent_consumption_toy,500.0,,TOY_STAGE_A,scenario,阶段A玩具需求

@@ -1,0 +1,18 @@
+﻿test_blank_inputs_are_not_usable_observed_initial_conditions (test_calendar_and_evidence.CalendarAndEvidenceTests.test_blank_inputs_are_not_usable_observed_initial_conditions) ... ok
+test_calendar_and_check_stay_aligned_after_config_change (test_calendar_and_evidence.CalendarAndEvidenceTests.test_calendar_and_check_stay_aligned_after_config_change) ... ok
+test_final_investment_requires_2043_parameters (test_calendar_and_evidence.CalendarAndEvidenceTests.test_final_investment_requires_2043_parameters) ... ok
+test_invalid_values_and_duplicate_keys_fail (test_calendar_and_evidence.CalendarAndEvidenceTests.test_invalid_values_and_duplicate_keys_fail) ... ok
+test_parse_gem_rejects_nonfinite_negative_and_duplicate_rows (test_calendar_and_evidence.CalendarAndEvidenceTests.test_parse_gem_rejects_nonfinite_negative_and_duplicate_rows) ... ok
+test_reviewed_pipeline_requires_project_table (test_calendar_and_evidence.CalendarAndEvidenceTests.test_reviewed_pipeline_requires_project_table) ... ok
+test_scenarios_with_complementary_year_gaps_still_fail (test_calendar_and_evidence.CalendarAndEvidenceTests.test_scenarios_with_complementary_year_gaps_still_fail) ... ok
+test_short_rows_do_not_crash_the_check (test_calendar_and_evidence.CalendarAndEvidenceTests.test_short_rows_do_not_crash_the_check) ... ok
+test_single_region_cannot_satisfy_annual_coverage (test_calendar_and_evidence.CalendarAndEvidenceTests.test_single_region_cannot_satisfy_annual_coverage) ... ok
+test_source_units_and_duplicate_summaries_are_preserved (test_calendar_and_evidence.CalendarAndEvidenceTests.test_source_units_and_duplicate_summaries_are_preserved) ... ok
+test_stale_investment_calendar_is_reported (test_calendar_and_evidence.CalendarAndEvidenceTests.test_stale_investment_calendar_is_reported) ... ok
+test_string_false_flags_are_rejected (test_calendar_and_evidence.CalendarAndEvidenceTests.test_string_false_flags_are_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.046s
+
+OK
+

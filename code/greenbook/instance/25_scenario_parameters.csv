@@ -1,0 +1,13 @@
+﻿scenario_id,parameter_id,location_key,year,numeric_value,text_value,unit,rule_version,parent_scenario,source_id,value_status,notes
+COMMON,discount_rate,GLOBAL,,0.07,,1_per_year,STAGE_A,,TOY_STAGE_A,scenario,
+COMMON,origin_carbon_price,EU,,80.0,,eur_per_tco2e,STAGE_A,,TOY_STAGE_A,scenario,
+COMMON,origin_carbon_price,X,,20.0,,eur_per_tco2e,STAGE_A,,TOY_STAGE_A,scenario,
+COMMON,eu_market,GLOBAL,,,EU,text:EU,STAGE_A,,TOY_STAGE_A,scenario,
+COMMON,transferable_share,R_EU_H2DRI,,0.8,,share,STAGE_A,,TOY_STAGE_A,scenario,
+COMMON,transferable_share,R_X_H2DRI,,0.6,,share,STAGE_A,,TOY_STAGE_A,scenario,
+COMMON,transferable_share,R_EU_HBIEAF,,0.5,,share,STAGE_A,,TOY_STAGE_A,scenario,
+COMMON,build_limit,INV_EU_DRI,,8000000,,tpy,STAGE_A,,TOY_STAGE_A,scenario,
+COMMON,build_limit,INV_EU_EAF,,5000000,,tpy,STAGE_A,,TOY_STAGE_A,scenario,
+COMMON,build_limit,INV_X_DRI,,8000000,,tpy,STAGE_A,,TOY_STAGE_A,scenario,
+G1,kappa,GLOBAL,,1.0,,share,STAGE_A,,TOY_STAGE_A,scenario,
+G05,kappa,GLOBAL,,0.5,,share,STAGE_A,,TOY_STAGE_A,scenario,

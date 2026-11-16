@@ -1,0 +1,12 @@
+﻿region,Total operating capacity,BOF,EAF,IF,other/ unspecified,integrated total,non-integrated total,source_id,snapshot,unit,value_status,coverage
+China,1088644000.0,898833000.0,189571000.0,240000.0,0.0,930810000.0,157834000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+EU27,174426000.0,95341000.0,79085000.0,0.0,0.0,87254000.0,87172000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+India,145459000.0,90663000.0,26578000.0,13768000.0,14450000.0,141826000.0,3633000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+Japan,105900000.0,76812000.0,29088000.0,0.0,0.0,67705000.0,38195000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+US,112196000.0,30651000.0,81545000.0,0.0,0.0,33651000.0,78545000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+Russia,85015000.0,51660000.0,33355000.0,0.0,0.0,67225000.0,17790000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+South Korea,80885000.0,53000000.0,27885000.0,0.0,0.0,57957000.0,22928000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+Turkey,56332000.0,13102000.0,43230000.0,0.0,0.0,13102000.0,43230000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+Brazil,42917000.0,32497000.0,10420000.0,0.0,0.0,36501000.0,6416000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+Australia,5930000.0,4400000.0,1530000.0,0.0,0.0,1200000.0,4730000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero
+ROW,330676000.0,112197000.0,198166000.0,13461000.0,6852000.0,208249000.0,122427000.0,GEM_steel_2026_09,2026-09,tCS/year,derived_from_observed_snapshot,sum of GEM tracked country records; absent facilities are not assumed zero

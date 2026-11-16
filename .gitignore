@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!\.env.example
+code/review_artifacts/test_fixture/
+code/review_artifacts/duplicate_investment_fixture/
+**/test_tmp/
