@@ -1,4 +1,4 @@
 rule_case,certificate_class,year,t_primary,t_scrap,b_primary,b_scrap,eligibility_boundary,reference_boundary,allowed_vintage,eu_use_rule,mrv_eur_per_certificate,banking_allowed,cash_exit_allowed,source_id,value_status,notes
-MAIN,GREEN_STEEL,2027,0.4,0.05,2.0,0.2,STAGE_A_PROC_ONLY,STAGE_A_PROC_ONLY,any,exclude_eu_delivery,0.5,0,0,TOY_STAGE_A,scenario,研究设定阈值，非行业标准
-MAIN,GREEN_STEEL,2028,0.4,0.05,2.0,0.2,STAGE_A_PROC_ONLY,STAGE_A_PROC_ONLY,any,exclude_eu_delivery,0.5,0,0,TOY_STAGE_A,scenario,研究设定阈值，非行业标准
-MAIN,GREEN_STEEL,2029,0.4,0.05,2.0,0.2,STAGE_A_PROC_ONLY,STAGE_A_PROC_ONLY,any,exclude_eu_delivery,0.5,0,0,TOY_STAGE_A,scenario,研究设定阈值，非行业标准
+MAIN,GREEN_STEEL,2027,0.4,0.05,2.0,0.2,STAGE_A_PROC_PLUS_H2_POWER,STAGE_A_PROC_ONLY,any,exclude_eu_delivery,0.5,0,0,TOY_STAGE_A,scenario,研究设定阈值，非行业标准
+MAIN,GREEN_STEEL,2028,0.4,0.05,2.0,0.2,STAGE_A_PROC_PLUS_H2_POWER,STAGE_A_PROC_ONLY,any,exclude_eu_delivery,0.5,0,0,TOY_STAGE_A,scenario,研究设定阈值，非行业标准
+MAIN,GREEN_STEEL,2029,0.4,0.05,2.0,0.2,STAGE_A_PROC_PLUS_H2_POWER,STAGE_A_PROC_ONLY,any,exclude_eu_delivery,0.5,0,0,TOY_STAGE_A,scenario,研究设定阈值，非行业标准
