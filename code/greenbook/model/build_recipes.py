@@ -32,7 +32,7 @@ class Recipe:
     v: float = 0.0
 
 
-def build(case):
+def build(case, *, benchmarks=None, qualify=True):
     recipes = {}
     hydrogen_eligibility = _hydrogen_eligibility(case)
     for (rid, year), row in case.recipes.items():
@@ -67,7 +67,7 @@ def build(case):
         grade = row["grade_id"].strip()
         is_steel = bool(grade)
         chi, v = 0, 0.0
-        if is_steel and row["certificate_class"].strip() != "NONE":
+        if qualify and is_steel and row["certificate_class"].strip() != "NONE":
             _, green_hydrogen_ok, electricity_emissions = hydrogen_eligibility(rid, year)
             eA += electricity_emissions
             rule = case.certificate_rules[("MAIN", year)]
@@ -75,7 +75,10 @@ def build(case):
             if not 0 <= s <= 1:
                 raise ValueError(f"Invalid scrap share for {rid}/{year}")
             threshold = float(rule["t_primary"]) * (1 - s) + float(rule["t_scrap"]) * s
-            benchmark = float(rule["b_primary"]) * (1 - s) + float(rule["b_scrap"]) * s
+            if benchmarks is None:
+                benchmark = float(rule["b_primary"]) * (1 - s) + float(rule["b_scrap"]) * s
+            else:
+                benchmark = benchmarks[(grade, year)]
             if green_hydrogen_ok and eA <= threshold:
                 chi = 1
                 v = max(0.0, benchmark - eR)

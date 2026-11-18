@@ -18,6 +18,16 @@ def audit_solution(case, sol, tolerance=1e-6):
                 capacity_use[(row["input_id"],t)] += amount*coef
     for (node,res,block,t),amount in sol.u.items():
         balances[(node,res,t)] += amount
+    exports = defaultdict(float)
+    available = defaultdict(float)
+    for (node, resource, _block, t), amount in sol.u.items():
+        available[node, resource, t] += amount
+    for (origin, dest, resource, t), amount in sol.f.items():
+        loss = float(case.transport[origin, dest, resource, t].get("loss_fraction") or 0)
+        balances[origin, resource, t] -= amount
+        balances[dest, resource, t] += (1 - loss) * amount
+        exports[origin, resource, t] += amount
+    max_export_excess = max((max(0., amount - available[key]) for key, amount in exports.items()), default=0.)
     max_material=max((abs(x) for x in balances.values()),default=0.)
     max_demand=0.
     for (region,grade,demand_case,t),value in case.demand.items():
@@ -48,7 +58,16 @@ def audit_solution(case, sol, tolerance=1e-6):
     objective_error=abs(pv-sol.objective_meur)
     max_complementarity=max((abs(sol.price.get(t,0.)*(sol.S[t]-sol.kappa*sol.L[t])) for t in case.years),default=0.)
     max_clearing_shortfall=max((max(0.,sol.kappa*sol.L[t]-sol.S[t]) for t in case.years),default=0.)
-    measures=dict(max_material_residual_Mt=max_material,max_demand_residual_Mt=max_demand,
+    max_exporter_cost_discrepancy = 0.
+    for t, costs in sol.annual_costs.items():
+        payments = [row for (_, year), row in sol.exporter_payments.items() if year == t]
+        cash_gap = abs(sum(row["cbam_payment"] for row in payments)
+                       - costs["cbam_payment"] - costs["unreplaced_border"])
+        certificate_gap = abs(sum(row["certificate_purchase"] for row in payments)
+                              - sol.price.get(t, 0.) * sol.kappa * sol.L[t])
+        max_exporter_cost_discrepancy = max(max_exporter_cost_discrepancy, cash_gap, certificate_gap)
+    measures=dict(max_material_residual_Mt=max_material, max_resource_export_excess_Mt=max_export_excess,
+                  max_exporter_cost_discrepancy_Meur=max_exporter_cost_discrepancy,max_demand_residual_Mt=max_demand,
                   max_dispatch_residual_Mt=max_dispatch,max_capacity_excess_Mt=max_capacity,
                   objective_cashflow_PV_error_Meur=objective_error,
                   max_clearing_shortfall_MtCO2=max_clearing_shortfall,

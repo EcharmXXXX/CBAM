@@ -11,7 +11,8 @@ from .devlin_inputs import update_devlin_inputs
 from .energy_inputs import update_energy_supply
 from .make_dynamic_instance import write_dynamic_instance
 from .model.solve import solve_case
-from .analysis.compare import write_tables
+from .analysis.compare import write_tables, write_policy_tables
+from .analysis.certificate_benchmarks import BENCHMARK_TIERS, build_benchmarks, read_strict_benchmarks
 from .analysis.policy_search import search
 from .analysis.audit import audit_solution
 
@@ -25,12 +26,23 @@ def main():
     parser.add_argument("--energy-supply",type=Path,help="JSON with islanded/grid engineering supply blocks")
     parser.add_argument("--devlin-inputs",type=Path,help="JSON with DR pellets and DRI/HBI engineering recipes")
     parser.add_argument("--terminal-rule",choices=["remaining_life","zero"],default="remaining_life")
-    parser.add_argument("--kappa-grid",type=float,nargs="*",default=[])
+    parser.add_argument("--strict-benchmarks", type=Path,
+                        help="European low-emission reference inputs (defaults to certificate_strict_benchmarks.csv in the instance)")
+    parser.add_argument("--include-hbi-trade", action="store_true",
+                        help="Open cross-border HBI in all current scenarios")
+    parser.add_argument("--legacy-policy", action="store_true", help="Reproduce the old Stage A policy")
+    parser.add_argument("--kappa-grid",type=float,nargs="*",default=[],
+                        help="Legacy policy only; the new scenarios always retire one-for-one")
     args = parser.parse_args()
     if bool(args.instance) == bool(args.synthetic_demo):
         parser.error("Choose --instance or --synthetic-demo")
     args.output.mkdir(parents=True,exist_ok=True)
-    instance = write_dynamic_instance(args.output/"synthetic_input") if args.synthetic_demo else args.instance
+    legacy = args.legacy_policy or bool(args.kappa_grid)
+    if legacy and args.strict_benchmarks:
+        parser.error("The historical policy does not use a strict benchmark table")
+    allow_hbi = legacy or args.include_hbi_trade
+    instance = (write_dynamic_instance(args.output/"synthetic_input", revised_policy=not legacy)
+                if args.synthetic_demo else args.instance)
     case = Case.load(instance,demand_case=args.demand_case)
     energy_report = None
     devlin_report = None
@@ -38,15 +50,28 @@ def main():
         case, devlin_report, energy_report = update_devlin_inputs(case,args.devlin_inputs,energy_path=args.energy_supply)
     elif args.energy_supply:
         energy_report = update_energy_supply(case,args.energy_supply)
-    sols = {scenario:solve_case(case,scenario,terminal_rule=args.terminal_rule) for scenario in ("N","C","G1","G05")}
-    write_tables(case,sols,args.output)
+    settings = dict(terminal_rule=args.terminal_rule, allow_hbi_trade=allow_hbi, legacy_policy=legacy)
+    sols = {scenario: solve_case(case, scenario, **settings) for scenario in ("N", "C")}
+    if legacy:
+        for scenario in ("G1", "G05"):
+            sols[scenario] = solve_case(case, scenario, **settings)
+    else:
+        path = args.strict_benchmarks or instance / "certificate_strict_benchmarks.csv"
+        if not path.is_file():
+            parser.error(f"A comparable European strict benchmark is required: {path}")
+        schedule = build_benchmarks(case, sols["C"], read_strict_benchmarks(path))
+        for tier in BENCHMARK_TIERS:
+            values = {key: row[tier] for key, row in schedule.items()}
+            sols[f"G_{tier.upper()}"] = solve_case(case, f"G_{tier.upper()}", benchmarks=values, **settings)
+        write_policy_tables(case, sols, schedule, args.output)
+    write_tables(case,sols,args.output, revised_policy=not legacy)
     audits = {s:audit_solution(case,sol) for s,sol in sols.items()}
     (args.output/"independent_audit.json").write_text(json.dumps(audits,indent=2),encoding="utf-8")
     raw = {s:{name:[dict(key=list(key),value=float(value)) for key,value in getattr(sol,name).items()]
-              for name in ("q","x","u","z","inv","y")} for s,sol in sols.items()}
+              for name in ("q","x","u","f","z","inv","y")} for s,sol in sols.items()}
     (args.output/"raw_solution_activities.json").write_text(json.dumps(raw,indent=2),encoding="utf-8")
     model_path = Path(__file__).parent
-    manifest = dict(run_time=datetime.now().astimezone().isoformat(),model_version="dynamic_core_v1",
+    manifest = dict(run_time=datetime.now().astimezone().isoformat(),model_version="dynamic_core_v1" if legacy else "dynamic_core_v2",
         years=case.years,instance=str(instance.resolve()),synthetic_demo=args.synthetic_demo,
         calibrated=False if args.synthetic_demo else "not established by this runner",
         terminal_rule=args.terminal_rule,python=platform.python_version(),
@@ -77,11 +102,17 @@ def main():
         (args.output/report_name).write_text(json.dumps(devlin_report,ensure_ascii=False,indent=2),encoding="utf-8")
         manifest["devlin_inputs"] = dict(input=str(args.devlin_inputs.resolve()),
             sha256=hashlib.sha256(args.devlin_inputs.read_bytes()).hexdigest(), diagnostics=report_name)
+    manifest["hbi_trade_enabled"] = allow_hbi
+    if not legacy:
+        manifest.update(policy="benchmark_tiers_one_for_one", strict_benchmark_sha256=hashlib.sha256(path.read_bytes()).hexdigest())
     if args.kappa_grid:
         manifest["policy_search"] = search(case,args.kappa_grid,args.output,terminal_rule=args.terminal_rule)
     (args.output/"run_manifest.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
     print(json.dumps({"output":str(args.output),"statuses":manifest["solver_status"],"years":case.years},ensure_ascii=True))
-    if any(not row["passed"] for row in audits.values()):
+    if any(sol.status != "optimal" or not audits[scenario]["passed"]
+           for scenario, sol in sols.items() if scenario in ("N", "C") or sol.status == "optimal"):
+        raise SystemExit(2)
+    if any(sol.status != "optimal" and not sol.status.startswith("infeasible:") for sol in sols.values()):
         raise SystemExit(2)
 
 

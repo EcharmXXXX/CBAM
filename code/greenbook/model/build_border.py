@@ -26,6 +26,8 @@ class Crossing:
                 parsed.append(("q", parts[0], None, coef))
             elif kind == "x" and len(parts) == 2:
                 parsed.append(("x", parts[0], parts[1], coef))
+            elif kind == "f" and len(parts) == 3:
+                parsed.append(("f", parts[0], tuple(parts[1:]), coef))
             else:
                 raise ValueError(f"Unsupported border mapping: {kind}/{key}")
         return parsed

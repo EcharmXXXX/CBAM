@@ -2,9 +2,10 @@
 import csv
 from pathlib import Path
 from .make_instance import write_instance
+from .policy_fixture import extend_fixture
 
 
-def write_dynamic_instance(directory, start=2026, end=2040):
+def write_dynamic_instance(directory, start=2026, end=2040, *, revised_policy=False):
     if end < start:
         raise ValueError("Invalid fixture years")
     directory = Path(directory)
@@ -31,6 +32,8 @@ def write_dynamic_instance(directory, start=2026, end=2040):
             writer = csv.DictWriter(file,fieldnames=fields)
             writer.writeheader()
             writer.writerows(rows)
+    if revised_policy:
+        extend_fixture(directory, start, end)
     (directory/"README.md").write_text(
         f"# Synthetic dynamic structural fixture\n\n{start}--{end}; two regions, three-year construction, annual investment decisions.\n"
         "All quantities and prices are synthetic. This is not a 2026 observed baseline or a real policy calibration.\n",encoding="utf-8")

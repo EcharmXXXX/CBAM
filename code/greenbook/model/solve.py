@@ -8,6 +8,7 @@
 - C：目标函数加入CBAM付款（式12）；
 - G(κ)：加入签发上限与出清硬约束（式14—15），无CBAM付款。
 """
+from collections import defaultdict
 from dataclasses import dataclass, field
 import numpy as np
 from scipy.optimize import linprog
@@ -19,7 +20,7 @@ from .build_dynamic import (build as build_dynamic,
                              is_available, terminal_residual)
 from .build_certificate import build as build_certificate
 
-LARGE_ARC = 400_000_000.0  # t；超过此值的运输弧不设容量行
+from .resource_trade import build as build_resource_trade
 
 
 @dataclass
@@ -43,6 +44,9 @@ class Solution:
     annual_costs: dict = field(default_factory=dict)  # undiscounted M EUR/year
     diagnostics: dict = field(default_factory=dict)
     capacity_rent: dict = field(default_factory=dict)
+    f: dict = field(default_factory=dict)           # (origin, dest, resource, year) -> shipped Mt
+    exporter_payments: dict = field(default_factory=dict)
+    certificate_supply: dict = field(default_factory=dict)  # (recipe, year) -> issuance accounting
 
 
 class _Vars:
@@ -60,10 +64,17 @@ class _Vars:
         return len(self.keys)
 
 
-def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_life"):
+def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_life",
+               benchmarks=None, allow_hbi_trade=True, legacy_policy=True):
     if terminal_rule not in ("remaining_life", "zero"):
         raise ValueError("Unknown terminal rule")
-    recipes = build_recipes(case)
+    revised = benchmarks is not None
+    if revised and (not scenario.startswith("G_") or kappa_override is not None):
+        raise ValueError("The benchmark policy uses fixed one-for-one retirement")
+    if not legacy_policy and scenario.startswith("G") and not revised:
+        raise ValueError("The benchmark policy requires a schedule for the certificate scenario")
+    recipes = build_recipes(case, benchmarks=benchmarks, qualify=legacy_policy or revised)
+    trades, arrivals, departures, supplies = build_resource_trade(case, recipes)
     crossings = build_border(case)
     pools, options = build_dynamic(case)
     certs = build_certificate(case, recipes)
@@ -79,7 +90,9 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
     beta = {t: (1 + rate) ** (-(t - years[0])) for t in years}
     origin_price = {(region, t): float(case.param("COMMON", "origin_carbon_price", region, year=t))
                     for region in case.regions for t in years}
-    kappa = float(kappa_override if kappa_override is not None else (case.param(scenario, "kappa") or 0.0))
+    kappa = 1.0 if revised else float(
+        kappa_override if kappa_override is not None else (case.param(scenario, "kappa") or 0.0)
+    )
     if kappa < 0 or not np.isfinite(kappa):
         raise ValueError("Invalid kappa")
     if scenario not in ("N", "C") and not scenario.startswith("G"):
@@ -104,7 +117,16 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
         var.add(("u", node, res, block, t))
     for (rid, t) in certs.eligible:
         var.add(("z", rid, t))
+    for key in trades:
+        var.add(("f", *key))
     n = len(var)
+
+    def border_key(kind, origin, destination, year):
+        if kind == "q":
+            return ("q", origin, year)
+        if kind == "f":
+            return ("f", origin, *destination, year)
+        return ("x", origin, destination, year)
 
     # ---- 目标函数 ----
     c = np.zeros(n)
@@ -149,6 +171,12 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
         cost_resource[ui] += price
         c[ui] += price
 
+    for key in trades:
+        fi = var.pos[("f", *key)]
+        freight = beta[key[-1]] * float(case.transport[key]["private_freight_eur_per_t"])
+        cost_transport[fi] += freight
+        c[fi] += freight
+
     for (oid, decision_year), option in options.items():
         ii = var.pos[("inv", oid, option.decision_year)]
         # §11.1：完整CAPEX按开工（决策年）只计一次，不另收年金；
@@ -173,7 +201,7 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
     for (crossing_class, t), crossing in crossings.items():
         row = case.border_rules[(crossing_class, t)]
         for kind, rid, destination, coef in crossing.variable_terms():
-            idx = var.pos[("q", rid, t)] if kind == "q" else var.pos[("x", rid, destination, t)]
+            idx = var.pos[border_key(kind, rid, destination, t)]
             tariff = beta[t] * float(row.get("tariff_eur_per_t_goods") or 0.) * coef
             cost_tariff[idx] += tariff
             c[idx] += tariff
@@ -219,7 +247,7 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
         add_eq(coefs, 0.0)
 
     # 3) 资源平衡（式5）：投入 = 供给块之和
-    resource_keys = sorted({(node, res, t) for (node, res, block, t) in case.resources})
+    resource_keys = sorted(set(supplies) | set(arrivals))
     available_resources = set(resource_keys)
     produced_intermediates = {(node, commodity, year)
                               for (rid, year), recipe in recipes.items()
@@ -238,12 +266,17 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
                 if input_id == res and input_node == node:
                     qi = var.pos[("q", rid, t)]
                     coefs[qi] = coefs.get(qi, 0.0) + coef
-        for (n2, r2, block, t2) in case.resources:
-            if (n2, r2, t2) == (node, res, t):
-                ui = var.pos[("u", node, res, block, t)]
-                coefs[ui] = coefs.get(ui, 0.0) - 1.0
+        pool = (node, res, t)
+        domestic = {var.pos[("u", *key)]: -1.0 for key in supplies[pool]}
+        exports = {var.pos[("f", *key)]: 1.0 for key in departures[pool]}
+        coefs.update(domestic)
+        coefs.update(exports)
+        for key in arrivals[pool]:
+            coefs[var.pos[("f", *key)]] = -trades[key][0]
         if coefs:
             add_eq(coefs, 0.0)
+        if exports:
+            add_ub(domestic | exports, 0.0)
 
     # Intermediate production and consumption share exactly one balance per
     # commodity/node/year, including local and cross-node consumption. Exogenous
@@ -306,8 +339,12 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
         if not np.isfinite(capacity) or capacity < 0:
             raise ValueError("Transport capacity must be finite and nonnegative")
         coefs = {}
-        if commodity == "steel":
+        if (origin, dest, commodity, t) in trades:
+            coefs[var.pos[("f", origin, dest, commodity, t)]] = 1.0
+        elif commodity == "steel":
             for rid in case.steel_recipe_ids:
+                if (rid, t) not in recipes:
+                    continue
                 recipe = recipes[(rid, t)]
                 if recipe.steel_node == origin:
                     xi = var.pos[("x", rid, dest, t)]
@@ -350,11 +387,16 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
             continue
         rid = row.get("recipe_id", "").strip()
         plant = row.get("plant_id", "").strip()
-        linked = [r for (r, year) in certs.eligible if year == t and
-                  (r == rid if rid else case.recipes[(r,t)].get("plant_id", "") == plant and bool(plant))]
-        if not linked:
+        mapped = [r for (r, year), recipe in recipes.items() if year == t and recipe.is_steel and
+                  (r == rid if rid else bool(plant) and case.recipes[r, t].get("plant_id", "") == plant)]
+        if not mapped:
             raise ValueError("Absolute attribute rights require a verified recipe_id or recipe-to-plant mapping")
-        add_ub({var.pos[("z", r, t)]: 1. for r in linked}, float(row["available_rights_tcs"]) / scale)
+        limit = float(row["available_rights_tcs"])
+        if not np.isfinite(limit) or limit < 0:
+            raise ValueError("Available attribute rights must be finite and nonnegative")
+        linked = [r for r in mapped if (r, t) in certs.eligible]
+        if linked:
+            add_ub({var.pos[("z", r, t)]: 1. for r in linked}, limit / scale)
 
     # 8) 出清（式15）
     if clearing_active:
@@ -369,13 +411,14 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
                 if tt != t or not crossing.replaced:
                     continue
                 for kind, rid, destination, coef in crossing.variable_terms():
-                    if kind == "q":
-                        idx = var.pos[("q", rid, t)]
-                    else:
-                        idx = var.pos[("x", rid, destination, t)]
+                    idx = var.pos[border_key(kind, rid, destination, t)]
                     coefs[idx] = coefs.get(idx, 0.0) + kappa * crossing.h * coef
-            add_ub(coefs, 0.0)
-            clearing_row[t] = len(ub_rows) - 1
+            if revised:
+                add_eq(coefs, 0.0)
+                clearing_row[t] = len(eq_rows) - 1
+            else:
+                add_ub(coefs, 0.0)
+                clearing_row[t] = len(ub_rows) - 1
 
     # ---- 边界 ----
     bounds = [(0, None)] * n
@@ -385,8 +428,16 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
             for region in case.regions:
                 if (region, recipe.grade, t) not in demand_pairs:
                     bounds[var.pos[("x", rid, region, t)]] = (0., 0.)
-    if not clearing_active:
-        for rid, t in certs.eligible:
+    for key, (_yield, enabled) in trades.items():
+        if not enabled:
+            bounds[var.pos[("f", *key)]] = (0., 0.)
+    if not allow_hbi_trade:
+        for (rid, t), recipe in recipes.items():
+            if any(dest and origin != dest and (res == "hbi" or res.startswith("hbi_"))
+                   for res, origin, _coef, dest in recipe.inputs):
+                bounds[var.pos[("q", rid, t)]] = (0., 0.)
+    for (rid, t), (_chi, _rho, value) in certs.eligible.items():
+        if not clearing_active or (revised and value == 0):
             bounds[var.pos[("z", rid, t)]] = (0., 0.)
     for (node, res, block, t), row in case.resources.items():
         ui = var.pos[("u", node, res, block, t)]
@@ -414,22 +465,53 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
     u = {key[1:]: get(key) for key in var.keys if key[0] == "u"}
     z = {key[1:]: get(key) for key in var.keys if key[0] == "z"}
     inv = {key[1:]: get(key) for key in var.keys if key[0] == "inv"}
+    f = {key: get(("f", *key)) for key in trades}
 
     # ---- 责任量、出清量与价格 ----
     y, L, S, price = {}, {}, {}, {}
     for (crossing_class, t), crossing in crossings.items():
         total = 0.0
         for kind, rid, destination, coef in crossing.variable_terms():
-            key = (rid, destination, t) if kind == "x" else (rid, t)
-            total += coef * (x.get(key) if kind == "x" else q.get(key, 0.0))
+            total += coef * get(border_key(kind, rid, destination, t))
         y[(crossing_class, t)] = total
     for t in years:
         L[t] = sum(crossings[(cc, tt)].h * y[(cc, t)] for (cc, tt) in crossings if tt == t and crossings[(cc,tt)].replaced)
         S[t] = sum(v * z.get((rid, tt), 0.0) for (rid, tt), (_c, _r, v) in certs.eligible.items()
                    if tt == t)
         if clearing_active:
-            marginal = res.ineqlin.marginals[clearing_row[t]]
+            marginal = (res.eqlin if revised else res.ineqlin).marginals[clearing_row[t]]
             price[t] = max(0.0, -marginal / beta[t])
+
+    exporter_payments = defaultdict(lambda: dict(net_liability=0., cbam_payment=0., certificate_purchase=0.))
+    for (crossing_class, t), crossing in crossings.items():
+        explicit_exporter = case.border_rules[crossing_class, t].get("exporter_region", "").strip()
+        for kind, rid, destination, coefficient in crossing.variable_terms():
+            if kind == "f":
+                exporter = rid
+            elif kind == "x":
+                exporter = recipes[rid, t].steel_node
+            else:
+                exporter = case.recipes[rid, t]["iron_node"]
+            entry = exporter_payments[(explicit_exporter or exporter, t)]
+            liability = crossing.h * coefficient * get(border_key(kind, rid, destination, t))
+            if crossing.replaced:
+                entry["net_liability"] += liability
+                entry["certificate_purchase"] += liability * kappa * price.get(t, 0.)
+            if cbam_active or not crossing.replaced:
+                entry["cbam_payment"] += liability * crossing.pay_price
+
+    certificate_supply = {}
+    for (rid, t), (_chi, rho, value) in certs.eligible.items():
+        compatible = sum(x[rid, market, t] for market in case.regions
+                         if certs.attribute_use(rid, market, case, t) > 0)
+        recipe = recipes[rid, t]
+        rule = case.certificate_rules["MAIN", t]
+        threshold = float(rule["t_primary"]) * (1 - recipe.scrap_share) + float(rule["t_scrap"]) * recipe.scrap_share
+        certificate_supply[rid, t] = dict(
+            scrap_share=recipe.scrap_share, eA_tco2e_per_tcs=recipe.eA, threshold_tco2e_per_tcs=threshold,
+            eR_tco2e_per_tcs=recipe.eR, value_tco2e_per_tcs=value, compatible_steel_Mt=compatible,
+            transferable_share=rho, proportional_ceiling_MtCO2e=compatible * rho * value,
+            backing_steel_Mt=z[rid, t], issued_and_retired_MtCO2e=z[rid, t] * value)
 
     # ---- 能力占用 ----
     pool_usage = {}
@@ -468,8 +550,11 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
         proc = sum(recipe.e_sys_proc * q[(rid, t)] for (rid, tt), recipe in recipes.items() if tt == t)
         supply = sum(u[(node, res, block, t)] * float(row["emission_factor"])
                     for (node, res, block, tt), row in case.resources.items() if tt == t)
-        transport = 0.0
+        transport = sum(amount * float(case.transport[key]["emissions_tco2e_per_t"])
+                        for key, amount in f.items() if key[-1] == t)
         for rid in case.steel_recipe_ids:
+            if (rid, t) not in recipes:
+                continue
             recipe = recipes[(rid, t)]
             for d in case.regions:
                 arc = case.transport[(recipe.steel_node, d, "steel", t)]
@@ -522,7 +607,8 @@ def solve_case(case, scenario, *, kappa_override=None, terminal_rule="remaining_
     return Solution(scenario=scenario, status="optimal", objective_meur=float(res.fun),
                     q=q, x=x, u=u, z=z, inv=inv, y=y, L=L, S=S, price=price,
                     pool_usage=pool_usage, costs=costs, emissions=emissions, kappa=kappa,
-                    annual_costs=annual_costs, diagnostics=diagnostics, capacity_rent=capacity_rent)
+                    annual_costs=annual_costs, diagnostics=diagnostics, capacity_rent=capacity_rent,
+                    f=f, exporter_payments=dict(exporter_payments), certificate_supply=certificate_supply)
 
 
 def _dense(rows, n):

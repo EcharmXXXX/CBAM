@@ -22,7 +22,7 @@ def _write(path, header, rows):
         writer.writerows(rows)
 
 
-def write_tables(case, solutions, out_dir):
+def write_tables(case, solutions, out_dir, *, revised_policy=False):
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     all_solutions = solutions
@@ -67,15 +67,22 @@ def write_tables(case, solutions, out_dir):
     certificates = []
     for scenario, sol in solutions.items():
         for t in case.years:
-            issued = sum(v for (rid, tt), v in sol.z.items() if tt == t)
-            certificates.append(dict(scenario=scenario, year=t, kappa=sol.kappa,
-                issued_Mcerts=round(issued, 6), S_MtCO2=round(sol.S.get(t, 0.0), 6),
-                L_MtCO2=round(sol.L.get(t, 0.0), 6),
-                price_eur_per_tCO2=round(sol.price.get(t, 0.0), 4),
-                cbam_payment_Meur=round(sol.annual_costs[t]["cbam_payment"], 6)))
+            steel_backing = sum(v for (rid, tt), v in sol.z.items() if tt == t)
+            row = dict(scenario=scenario, year=t,
+                       price_eur_per_tCO2=round(sol.price.get(t, 0.0), 4),
+                       cbam_payment_Meur=round(sol.annual_costs[t]["cbam_payment"], 6))
+            if revised_policy:
+                row.update(backing_steel_Mt=round(steel_backing, 6),
+                           retired_MtCO2e=round(sol.S[t], 6),
+                           net_border_responsibility_MtCO2e=round(sol.L[t], 6))
+            else:
+                row.update(kappa=sol.kappa, issued_Mcerts=round(steel_backing, 6),
+                           S_MtCO2=round(sol.S[t], 6), L_MtCO2=round(sol.L[t], 6))
+            certificates.append(row)
+    measures = (["backing_steel_Mt", "retired_MtCO2e", "net_border_responsibility_MtCO2e"]
+                if revised_policy else ["kappa", "issued_Mcerts", "S_MtCO2", "L_MtCO2"])
     _write(out_dir / "certificates_and_clearing.csv",
-           ["scenario", "year", "kappa", "issued_Mcerts", "S_MtCO2", "L_MtCO2",
-            "price_eur_per_tCO2", "cbam_payment_Meur"], certificates)
+           ["scenario", "year", *measures, "price_eur_per_tCO2", "cbam_payment_Meur"], certificates)
 
     investment = []
     for scenario, sol in solutions.items():
@@ -106,6 +113,57 @@ def write_tables(case, solutions, out_dir):
     (out_dir / "diagnostics.json").write_text(json.dumps({s:sol.diagnostics for s,sol in all_solutions.items()}, ensure_ascii=False,indent=2),encoding="utf-8")
     _write_summary(case, all_solutions, out_dir / "summary.md")
     return out_dir / "summary.md"
+
+
+def write_policy_tables(case, solutions, benchmarks, output):
+    benchmark_fields = ["grade_id", "year", "loose", "normal", "strict", "strict_source"]
+    _write(output / "certificate_benchmarks.csv", benchmark_fields,
+           (dict(grade_id=g, year=t, **values) for (g, t), values in benchmarks.items()))
+
+    shipments = []
+    payments = []
+    issuance = []
+    comparisons = []
+    reference = sum(row["total"] for row in solutions["C"].emissions.values())
+    for scenario, sol in solutions.items():
+        outcome = dict(scenario=scenario, status=sol.status, sys_MtCO2e="", delta_vs_CBAM_MtCO2e="",
+                       eu_imports_Mt="", eu_domestic_deliveries_Mt="", matches_cbam_emissions="")
+        if sol.status == "optimal":
+            emissions = sum(row["total"] for row in sol.emissions.values())
+            outcome.update(sys_MtCO2e=emissions, delta_vs_CBAM_MtCO2e=emissions-reference,
+                           matches_cbam_emissions=emissions <= reference + 1e-7,
+                           eu_imports_Mt=0., eu_domestic_deliveries_Mt=0.)
+            for (rid, market, year), amount in sol.x.items():
+                if market != case.eu_market:
+                    continue
+                key = ("eu_domestic_deliveries_Mt" if case.recipes[rid, year]["steel_node"] == case.eu_market
+                       else "eu_imports_Mt")
+                outcome[key] += amount
+        comparisons.append(outcome)
+        for (origin, destination, resource, year), shipped in sol.f.items():
+            loss = float(case.transport[origin, destination, resource, year].get("loss_fraction") or 0)
+            shipments.append(dict(scenario=scenario, year=year, origin=origin, destination=destination,
+                                  resource=resource, shipped_Mt=shipped, delivered_Mt=shipped*(1-loss)))
+        for (exporter, year), row in sol.exporter_payments.items():
+            payments.append(dict(scenario=scenario, year=year, exporter=exporter,
+                                 replaced_scope_liability_MtCO2e=row["net_liability"],
+                                 cbam_and_retained_payment_Meur=row["cbam_payment"],
+                                 certificate_purchase_Meur=row["certificate_purchase"]))
+        for (recipe, year), row in sol.certificate_supply.items():
+            revenue = row["issued_and_retired_MtCO2e"] * sol.price.get(year, 0.)
+            issuance.append(dict(scenario=scenario, year=year, recipe=recipe, **row,
+                                 gross_certificate_revenue_Meur=revenue))
+    _write(output / "policy_comparison.csv", list(comparisons[0]), comparisons)
+    _write(output / "resource_trade.csv",
+           ["scenario", "year", "origin", "destination", "resource", "shipped_Mt", "delivered_Mt"], shipments)
+    _write(output / "exporter_payments.csv",
+           ["scenario", "year", "exporter", "replaced_scope_liability_MtCO2e",
+            "cbam_and_retained_payment_Meur", "certificate_purchase_Meur"], payments)
+    _write(output / "certificate_issuance.csv",
+           ["scenario", "year", "recipe", "scrap_share", "eA_tco2e_per_tcs", "threshold_tco2e_per_tcs",
+            "eR_tco2e_per_tcs", "value_tco2e_per_tcs", "compatible_steel_Mt", "transferable_share",
+            "proportional_ceiling_MtCO2e", "backing_steel_Mt", "issued_and_retired_MtCO2e",
+            "gross_certificate_revenue_Meur"], issuance)
 
 
 def _write_summary(case, solutions, path):

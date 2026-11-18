@@ -1,8 +1,16 @@
-# CBAM-GSC动态核心：第一轮建模
+# CBAM与绿色钢铁证书动态模型
 
-依据《详细模型建模方案与数据需求》实现的科研模型代码，当前版本为 `dynamic_core_v1`。本轮交付是可运行、可验证的动态核心和离线能源子模块原型；真实2026初始状态尚未配平、校准。
+依据《详细模型建模方案与数据需求》实现的科研模型代码，默认政策版本为 `dynamic_core_v2`。真实2026初始状态尚未配平和校准。
 
-用户确定的研究期为2026—2040，三年建设期，保留BF-BOF、废钢EAF、H2-DRI-EAF三条主路线，并记录未覆盖工艺。供应链配方还表达绿氢HBI中间活动和进口HBI进入EAF，避免把铁、钢重复计产。新模块不限于固定的两地区和三个年份；实例中的两地区和数据是合成结构案例。
+研究期为2026—2040，合成示例采用三年建设期和两个地区。现有固定菜单按金属炉料质量计废钢比例，各配方自行记录物耗、排放、费用和工程约束。
+
+| 路线 | 合成主例的配方废钢比 |
+|---|---:|
+| 高炉—转炉 | 12.5% |
+| 共址氢基直接还原铁—电炉 | 0%、12.5%、25% |
+| 全废钢电炉 | 100% |
+
+各场景从同一组固定配方选择各自的产量，配方共用相应工序产能和资源，整家钢厂可同时运行多条配方。真实实例须自行编制表11、12和适用的合规及排放数据。Devlin的50%氢基配方可作扩展敏感性。主模型内生安排钢材、废钢与铁矿石去向，DR级球团独立建池。跨境HBI默认关闭，开放时适用于所有对照场景。
 
 主情景最终钢材需求按单一粗钢当量 `STEEL_AGG` 处理；HBI是中间活动。`grade_id`保留以兼容历史实例和扩展，但不得把它误读为主模型板材需求。历史合成结果中的 `FLAT` 是旧标签，未据此生成新的政策结论。
 
@@ -11,16 +19,23 @@
 | 方案部分 | 本轮实现 | 边界 |
 |---|---|---|
 | §4 能源制氢 | 离网风光逐时优化和并网工业电价两种口径，交付上限、成本和排放可接入年度LP | 真实气象、工程成本和工业电价待校准；排放边界由输入因子决定 |
-| §6 供需与物料 | 单一粗钢当量需求；DR球团供给块；固定配方铁平衡；共址热/冷DRI与跨境HBI；共享DRI/EAF和运输走廊 | 供给量、品位、杂质上限和物流按项目录入；没有独立跨境矿石/废钢f变量 |
+| §6 供需与物料 | 单一粗钢当量需求；DR球团供给块；固定配方铁平衡；共址热/冷DRI与跨境HBI；共享DRI/EAF和运输走廊 | 供给量、品位、杂质上限和物流按项目录入；废钢、矿石和球团用独立f变量，计发运损耗、费用、排放及运力约束 |
 | §7 动态能力 | 按投运、寿命、明确退役年、scope_share和各自利用率计算初始资产；逐选项×决策年新建；建设滞后；共享年度建设上限 | 自然/已公告退役和闲置；未实现内生提前退出及改造，不接受将改造伪装为无源新建 |
 | §8 排放账 | 责任、资格与物理工序边界分开；资源和运输单计；前体已在别处计量时不重复计工序排放/碳价 | 真实排放分量及其边界仍需校准 |
-| §9 CBAM | 按商品类别截零；q/x入境映射；替代范围与保留范围现金义务分开；保留责任与共同关税进入各情景 | 不替代现行法规核验，不支持未提供的海关特殊程序 |
+| §9 CBAM | 按商品类别截零；q/x/f入境映射；替代范围与保留范围现金义务分开；保留责任与共同关税进入各情景 | 不替代现行法规核验，不支持未提供的海关特殊程序 |
 | §10 证书 | 逐年资格与认可量；逐年EU兼容规则；ρ比例及经证据链接的绝对权属上限；年内签发核销；出清对偶 | 不启用银行/现金退出；新项目专属资格须进一步链接实际生产批次，当前明确拒绝该选项 |
 | §10 氢源核验 | 签发配方按实际氢资源ID及HBI物料池追溯到可核验可再生电力水电解；资格账加入制氢用电排放 | 合成示例中的证据标识仅供结构测试；CBAM责任和技术菜单继续独立处理 |
 | §10 前体属性 | 当某配方已产生q映射的前体入境责任时，保守排除整条配方签发 | 这是研究主规则，并非对现行证书制度的法律认定 |
 | §11 成本与价格 | 一次CAPEX、逐年FOM、保守残值；年度碳价；完整成本分项；逐年未折现现金流及PV对账；容量租金 | 使用采购成本代理，不自动声称资源福利；零义务年的对偶价格不可唯一识别 |
-| §12 政策搜索 | N/C/G1/G05与任意非负κ；显式网格逐点求解；最小已考察达标κ及达标集中成本较低者 | 不假设排放单调，不宣称网格外全局最优 |
+| §12 政策比较 | N、C及宽松、正常、严格三档G共同比较累计系统排放、欧盟产量及进口 | 三档变化可能通过生产投资和贸易重排影响排放 |
 | §17 可复现 | 稀疏矩阵HiGHS；输入/代码哈希、Python/库版本、年份、数量单位、可行性残差、失败状态与比较表 | 成功求解不等于已完成真实校准 |
+
+### 签发与出口商履约
+
+1. 用废钢比加权的研究资格门槛 `0.40(1−s)+0.05s` 判断是否合格。用氢路线还须证明可追溯的可再生电力水电解。
+2. 按产品和年份冻结基准。宽松档取C情景向欧盟交付中排放强度最高的半数交付量，求加权平均。正常档取C情景欧盟自产和进口的全部交付量加权平均。严格档取经核验、同口径的欧洲同类钢材低排放前10%参考值。
+3. 每吨合格钢可提供 `max(0, 档位基准 − 责任参考排放强度)` 的签发额度。实际额度按兼容的交付量、可转让比例和核验权属上限确定。欧盟交付及已计入前体入境责任的属性按主规则排除。每个证书单位为1吨CO₂e的履约认可量。
+4. G中出口商按本情景实际入境形成的CBAM等效净责任1:1采购并核销，资金进入属性供方。C按法定CBAM口径计算净责任，费用在模型中全部归给出口方，实际法定缴纳主体依适用规则。系统物理排放通过N、C及各G的实物活动另行比较。
 
 ### 严格绿氢的数据接口
 
@@ -40,22 +55,27 @@
 - 新建在末年之后才投运时，当前保守规则不给在建工程残值；已经投运的设备按剩余服务寿命计值。可用 `--terminal-rule zero`作共同零残值敏感性。
 - 输入重复键、缺资源、缺可转让比例、无效价格参考、负MRV费用等均报错或返回失败，不用零值补齐。
 
+- 表16的原料市场弧使用 `market_trade=1`、`trade_allowed=0/1`，商品ID采用 `scrap`、`iron_ore`、`ore` 或 `pellets` 及其质量分组前缀。供方表13对应资源以吨计，配方从目的地资源池取用。发运量占用走廊限额，按 `loss_fraction` 折算到货量。
+- 受管制的原料需在表18按实际对应商品录入 `variable_kind=f` 和 `variable_key=起点|终点|资源ID`。系数将发运吨换成实际入境吨。出口方默认取生产地或发运地，也可在表17按入境责任类别显式填写 `exporter_region`。
+- 配套 `certificate_strict_benchmarks.csv` 包含 `grade_id,year,benchmark_tco2e_per_tcs,source_id`。外部严格档必须有可追溯来源并使用与表19责任参考账一致的边界。真实输入中的来源登记需要注明样本范围、产量加权法和基准年份。
+
 ## 运行
 
-在 `code/` 目录执行：
+在 `code/` 目录执行。Python需为3.11及以上，并安装仓库根目录的 `requirements.txt`。
 
-```powershell
-py -3.14 -m greenbook.run_model --synthetic-demo --output results/dynamic_structure_2026_2040 --kappa-grid 0.25 0.5 0.75 1 1.25 1.5 2 3 4
-py -3.14 -m unittest discover -s greenbook/tests -v
+```sh
+python -m greenbook.run_model --synthetic-demo --output results/fixed_recipe_certificate_demo
+python -m greenbook.run_model --synthetic-demo --include-hbi-trade --output results/fixed_recipe_certificate_hbi
+python -m unittest discover -s greenbook/tests -v
 ```
 
-Python 3.11及以上可用，依赖NumPy与SciPy。将 `py -3.14`替换为你选择的Python解释器即可。真实数据准备好后：
+校准实例可将严格档表放入实例目录，也可通过参数指定。
 
-```powershell
-python -m greenbook.run_model --instance PATH_TO_CALIBRATED_INPUT --demand-case MAIN --output results/observed_case_run
+```sh
+python -m greenbook.run_model --instance PATH_TO_INPUT --demand-case MAIN --strict-benchmarks PATH_TO_CSV --output results/observed_case_run
 ```
 
-运行器不会凭参数名称认证“已校准”，真实输入仍须经过外部证据、静态基年配平与留出检验。
+严格档缺失会报错，合成算例的严格档数值仅用于测试。历史结果可用 `--legacy-policy` 或原 `--kappa-grid` 参数复算。
 
 ### 离网和并网电价
 
@@ -89,7 +109,7 @@ python -m greenbook.run_model --instance PATH_TO_CALIBRATED_INPUT --demand-case 
 在 `code/` 下运行以下合成示例。配置可与 `--energy-supply` 同时使用，先生成工序投入，再求解工程能源块。
 
 ```sh
-python -m greenbook.run_model --synthetic-demo --devlin-inputs greenbook/examples/devlin_synthetic.json --output results/devlin_structure
+python -m greenbook.run_model --synthetic-demo --legacy-policy --devlin-inputs greenbook/examples/devlin_synthetic.json --output results/devlin_structure
 ```
 
 - `pellet_blocks` 按节点、质量资源ID、独立供给块和年份，填干基球团的铁质量份额和脉石质量份额。上限取矿石对应的球团产量、球团厂产量和交付量的最小值，再减去其他已承诺用途。不同块的共同产能须先分配。可填 `private_price_per_t`，或输入矿石品位、论文价格年美元至本模型欧元的转换系数及到厂运费，利用论文式(1)生成情景价格。
@@ -103,26 +123,19 @@ python -m greenbook.analysis.devlin_screen --published-xlsx PATH_TO_Source_Data.
 python -m greenbook.analysis.devlin_screen --training training.csv --candidates candidates.csv --output results/devlin_sites_fitted.csv
 ```
 
-## 已运行的结构检验
+## 结果与结构核验
 
-当前40项自动测试通过，包含离网和并网手算、土地与电解用水、球团和氢基配方校准、HBI发运与入境量和共享运输限额、能源块进入年度模型与GSC资格核验，以及2026—2040完整窗口。
-
-2026—2040合成案例的N/C/G1/G05均可解，κ网格9点均得到最优解。合成案例中排放随κ并不单调，搜索据此保留逐点比较。此结果用于检查机制和搜索代码，不能解释为现实中GSC优于CBAM。
-
-主结果见 `code/results/dynamic_structure_2026_2040/`：
-
-- `solver_status.csv`、`diagnostics.json`、`run_manifest.json`：状态、误差、版本和来源；
-- `independent_audit.json`、`raw_solution_activities.json`：按原始输入重新计算的独立物理/现金流检查，以及未四舍五入的全部活动量；
-- `production_by_recipe.csv`、`delivery.csv`、`capacity_utilisation.csv`、`investment.csv`：实物流和动态活动；
-- `emissions_sys.csv`：未折现物理排放；
-- `annual_costs_undiscounted.csv`、`payments.csv`：逐年未折现费用；摘要中成本为全期PV；
-- `certificates_and_clearing.csv`、`capacity_rents.csv`、`kappa_grid.csv`：证书、容量及政策搜索；
-- `synthetic_input/`：本次全部合成输入，可逐项检查。
+- `certificate_benchmarks.csv` 记录冻结的产品和年度基准及严格档来源。
+- `certificate_issuance.csv` 记录配方废钢比、资格强度、门槛、责任参考强度、每吨钢认可量、兼容交付、比例上限以及实际签发核销量。比例上限仍受绝对权属约束。 `certificates_and_clearing.csv` 按年度对账。
+- `exporter_payments.csv` 记录各出口方的净责任、CBAM及保留费用、证书采购支出。 `resource_trade.csv` 记录各原料弧的发运量和到货量。
+- `policy_comparison.csv` 报告各档累计系统排放、与C的差额及欧盟自产和进口。 `summary.md` 另报全期折现成本。
+- `solver_status.csv`、`independent_audit.json` 和 `run_manifest.json` 记录求解、独立物理/现金流核算、输入来源及版本。 `synthetic_input/` 保存该次生成的全部合成输入。
+- 历史结构输出留在 `code/results/dynamic_structure_2026_2040/`，对应上一版签发与核销规则。
 
 ## 后续建模工作的明确缺口
 
 1. 2026初始资产、真实项目管线、工艺配方及2030—2040资源路径的采集、配平和验证。已有2026年9月GEM快照仍不能自动成为1月1日三路线基线。
-2. 质量与商品转换验证器、初始储量和显式原料贸易、未覆盖路线的供需/排放闭合。
+2. 质量与商品转换验证器、实际矿源/回收供给和跨境运力校准、未覆盖路线的供需及排放闭合。
 3. 带源批次的改造、内生提前退出、实际生产到新增低碳还原批次的资格追踪。
 4. 清洁能源与制氢原型扩展为有明确年景、供水、压缩、上游排放及交付可靠性的工程供给块。
 5. 最优面排放与价格可识别区间、真实基年留出验证及成本/权属/终端敏感性。
